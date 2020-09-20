@@ -1,0 +1,13 @@
+name: ColonyModerationSystem
+version: 2.0
+author: ACrispyCookie
+main: net.colonymc.moderationsystem.spigot.Main
+depend: [ColonyAPI]
+commands: 
+  queue:
+    description: Command used to get in queue.
+    aliases: [play]
+  leavequeue:
+    description: Command used to leave the queue.
+    aliases: [leaveplay]
+  
