@@ -35,6 +35,9 @@ import net.colonymc.moderationsystem.bungee.reports.ArchivedReportsCommand;
 import net.colonymc.moderationsystem.bungee.reports.Report;
 import net.colonymc.moderationsystem.bungee.reports.ReportCommand;
 import net.colonymc.moderationsystem.bungee.reports.ReportsCommand;
+import net.colonymc.moderationsystem.bungee.staffmanager.DemoteCommand;
+import net.colonymc.moderationsystem.bungee.staffmanager.PromoteCommand;
+import net.colonymc.moderationsystem.bungee.staffmanager.StaffJoinListener;
 import net.colonymc.moderationsystem.bungee.twofa.FreezeSession;
 import net.colonymc.moderationsystem.bungee.twofa.LinkCommand;
 import net.colonymc.moderationsystem.bungee.twofa.LinkedPlayer;
@@ -220,6 +223,7 @@ public class Main extends Plugin {
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new JoinListener());
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new DisconnectListener());
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new FreezeSession());
+		ProxyServer.getInstance().getPluginManager().registerListener(this, new StaffJoinListener());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new McLinkCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new UnlinkCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new BanCommand());
@@ -232,6 +236,8 @@ public class Main extends Plugin {
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new ArchivedReportsCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new SecureLogoutCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new RoleCommand());
+		ProxyServer.getInstance().getPluginManager().registerCommand(this, new DemoteCommand());
+		ProxyServer.getInstance().getPluginManager().registerCommand(this, new PromoteCommand());
 		jda.addEventListener(new LinkCommand());
 		jda.addEventListener(new FreezeSession());
 		jda.addEventListener(new DiscordListeners());
