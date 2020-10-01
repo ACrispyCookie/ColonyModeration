@@ -3,7 +3,9 @@ package net.colonymc.moderationsystem.spigot.staffmanager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
@@ -27,6 +29,10 @@ public class BStaffMember {
 	ArrayList<Punishment> bans = new ArrayList<Punishment>();
 	ArrayList<DPunishment> dbans = new ArrayList<DPunishment>();
 	ArrayList<Report> reports = new ArrayList<Report>();
+	HashMap<String, Double> dFeedback = new HashMap<String, Double>();
+	HashMap<String, Double> wFeedback = new HashMap<String, Double>();
+	HashMap<String, Double> mFeedback = new HashMap<String, Double>();
+	HashMap<String, Double> feedback = new HashMap<String, Double>();
 	static ArrayList<BStaffMember> staff = new ArrayList<BStaffMember>();
 	static ArrayList<BStaffMember> allStaff = new ArrayList<BStaffMember>();
 	
@@ -134,12 +140,29 @@ public class BStaffMember {
 		return sessions;
 	}
 	
+	public HashMap<String, Double> getFeedback() {
+		return feedback;
+	}
+	
+	public HashMap<String, Double> getDailyF() {
+		return dFeedback;
+	}
+	
+	public HashMap<String, Double> getWeeklyF() {
+		return wFeedback;
+	}
+	
+	public HashMap<String, Double> getMonhtlyF() {
+		return mFeedback;
+	}
+	
 	public void loadAll() {
 		loadProms();
 		loadSessions();
 		loadBans();
 		loadDBans();
 		loadReports();
+		loadFeedback();
 	}
 	
 	private void loadProms() {
@@ -221,6 +244,65 @@ public class BStaffMember {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private void loadFeedback() {
+		dFeedback.clear();
+		wFeedback.clear();
+		mFeedback.clear();
+		Calendar d = Calendar.getInstance();
+		d.set(Calendar.HOUR_OF_DAY, 0);
+		d.set(Calendar.MINUTE, 0);
+		d.set(Calendar.SECOND, 0);
+		d.set(Calendar.MILLISECOND, 0);
+		Calendar w = Calendar.getInstance();
+		w.set(Calendar.DAY_OF_WEEK_IN_MONTH, 0);
+		w.set(Calendar.HOUR_OF_DAY, 0);
+		w.set(Calendar.MINUTE, 0);
+		w.set(Calendar.SECOND, 0);
+		w.set(Calendar.MILLISECOND, 0);
+		Calendar m = Calendar.getInstance();
+		m.set(Calendar.DAY_OF_MONTH, 0);
+		m.set(Calendar.HOUR_OF_DAY, 0);
+		m.set(Calendar.MINUTE, 0);
+		m.set(Calendar.SECOND, 0);
+		m.set(Calendar.MILLISECOND, 0);
+		for(int i = 0; i < 4; i++) {
+			String count = (i == 0 ? "active" : i == 1 ? "helpful" : i == 2 ? "friendly" : i == 3 ? "fair" : "");
+			ResultSet rs = MainDatabase.getResultSet("SELECT * FROM StaffFeedback WHERE uuid='" + uuid + "'");
+			try {
+				int tC = 0;
+				int totalStars = 0;
+				int dC = 0;
+				int dStars = 0;
+				int wC = 0;
+				int wStars = 0;
+				int mC = 0;
+				int mStars = 0;
+				while(rs.next()) {
+					totalStars = totalStars + rs.getInt(count);
+					tC++;
+					if(rs.getLong("timestamp") >= d.getTimeInMillis()) {
+						dStars = dStars + rs.getInt(count);
+						dC++;
+					}
+					if(rs.getLong("timestamp") >= w.getTimeInMillis()) {
+						wStars = wStars + rs.getInt(count);
+						wC++;
+					}
+					if(rs.getLong("timestamp") >= m.getTimeInMillis()) {
+						mStars = mStars + rs.getInt(count);
+						mC++;
+					}
+				}
+				feedback.put(count, (double) totalStars / tC);
+				dFeedback.put(count, (double) dStars / dC);
+				wFeedback.put(count, (double) wStars / wC);
+				mFeedback.put(count, (double) mStars / mC);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

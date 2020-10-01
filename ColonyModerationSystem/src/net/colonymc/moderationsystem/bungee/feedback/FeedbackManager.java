@@ -60,7 +60,7 @@ public class FeedbackManager {
 				lastChange = System.currentTimeMillis();
 				for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
 					TextComponent ask = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &fWould you like to answer a random feedback survey?"));
-					TextComponent proceed = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n                                  &a&l[START]\n "));
+					TextComponent proceed = new TextComponent(ChatColor.translateAlternateColorCodes('&', " &a&l[START]\n "));
 					proceed.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/feedback new"));
 					ask.addExtra(proceed);
 					p.sendMessage(ask);

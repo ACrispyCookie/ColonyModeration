@@ -50,7 +50,7 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String joinTimestamp = sdf.format(new Date(b.getJoin()));
 		String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 		String rank = b.getRank().getName();
-		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore("\n&5� &fRank: &d" + rank + "\n&5� &fJoined at: &d" + joinTimestamp + "\n&5� &fLeft at: &d" + leaveTimestamp).build();
+		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore("\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
 			if(b.getRank() != Rank.OWNER) {
@@ -237,7 +237,44 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 	}
 	
 	private ItemStack feedbackItem() {
-		return null;
+		DecimalFormat d = new DecimalFormat("#.##");
+		return new ItemStackBuilder(Material.PAPER)
+				.name("&dPlayer feedback")
+				.lore("\n&fToday:"
+						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
+						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+					 + "\n \n&fThis week:"
+						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
+						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+					+ "\n \n&fThis month:"
+						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
+						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+					+ "\n \n&fTotal:"
+						+ "\n &5» &fFair: " + getStars(b.getFeedback().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars(b.getFeedback().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars(b.getFeedback().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
+						+ "\n &5» &fActive: " + getStars(b.getFeedback().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)")
+				.build();
+	}
+	
+	private String getStars(int stars) {
+		if(stars >= 5) {
+			return "&d⭐⭐⭐⭐⭐";
+		}
+		else if(stars <= 0) {
+			return "&7⭐⭐⭐⭐⭐";
+		}
+		else {
+			String s = "&d⭐⭐⭐⭐⭐";
+			s = s.substring(0, 2 + stars) + "&7" + s.substring(2 + stars);
+			return s;
+		}
 	}
 	
 }
