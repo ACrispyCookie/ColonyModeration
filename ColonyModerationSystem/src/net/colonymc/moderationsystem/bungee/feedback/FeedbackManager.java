@@ -59,7 +59,7 @@ public class FeedbackManager {
 				chosenStaff = staff != null ? new StaffFeedback(chooseStaff()) : null;
 				lastChange = System.currentTimeMillis();
 				for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-					TextComponent ask = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &fWould you like to answer a random feedback survey?\n &5&l» &f(Reward may be available)"));
+					TextComponent ask = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fWould you like to answer a random feedback survey?\n &5&l» &f(Reward may be available)"));
 					TextComponent proceed = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &d&lClick HERE to start!\n "));
 					proceed.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/feedback new"));
 					ask.addExtra(proceed);
@@ -197,6 +197,8 @@ public class FeedbackManager {
 				}
 			}
 			Collections.sort(topStaff);
+			topStaff.remove(StaffMemberCounter.getByUuid("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f"));
+			topSurveyedStaff.remove("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f");
 			for(int i = 0; i < topStaff.size(); i++) {
 				StaffMemberCounter smc = topStaff.get(i);
 				if(!topSurveyedStaff.contains(smc.getUuid())) {
@@ -209,6 +211,7 @@ public class FeedbackManager {
 					}
 				}
 			}
+			StaffMemberCounter.clear();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

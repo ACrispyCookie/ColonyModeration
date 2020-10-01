@@ -38,5 +38,9 @@ public class StaffMemberCounter implements Comparable<StaffMemberCounter> {
 		}
 		return null;
 	}
+	
+	public static void clear() {
+		smc.clear();
+	}
 
 }
