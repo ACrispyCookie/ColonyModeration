@@ -59,8 +59,8 @@ public class FeedbackManager {
 				chosenStaff = staff != null ? new StaffFeedback(chooseStaff()) : null;
 				lastChange = System.currentTimeMillis();
 				for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-					TextComponent ask = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &fWould you like to answer a random feedback survey?"));
-					TextComponent proceed = new TextComponent(ChatColor.translateAlternateColorCodes('&', " &a&l[START]\n "));
+					TextComponent ask = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &fWould you like to answer a random feedback survey?\n &5&l» &f(Reward may be available)"));
+					TextComponent proceed = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &d&lClick HERE to start!\n "));
 					proceed.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/feedback new"));
 					ask.addExtra(proceed);
 					p.sendMessage(ask);
@@ -93,7 +93,7 @@ public class FeedbackManager {
 				e.printStackTrace();
 			}
 		}
-		p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cNo surveys found :(")));
+		p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou answered every available survey!")));
 	}
 	
 	public Feedback getById(String id) {
