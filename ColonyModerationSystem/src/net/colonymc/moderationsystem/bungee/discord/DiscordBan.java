@@ -89,6 +89,8 @@ public class DiscordBan {
 		}
 		else {
 			Main.getGuild().getTextChannelById(722982688801161247L).retrieveMessageById(messageId).complete().delete().queue();
+			MainDatabase.sendStatement("INSERT INTO ArchivedDiscordBans (discordId, staffId, reason, type, issuedAt, bannedUntil) VALUES "
+					+ "( " + target.getIdLong() + ", " + staff.getIdLong() + ", '" + reason + "', 'ban', " + issuedAt + ", " + bannedUntil + ")");
 		}
 		MainDatabase.sendStatement("DELETE FROM DiscordBans WHERE discordId=" + target.getIdLong() + " AND type='ban';");
 		Main.getGuild().unban(target.getId()).queue();

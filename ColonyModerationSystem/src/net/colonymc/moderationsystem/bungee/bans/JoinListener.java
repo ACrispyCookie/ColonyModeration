@@ -176,8 +176,8 @@ public class JoinListener implements Listener {
 		User u = Main.getLuckPerms().getUserManager().getUser(uuid);
 		updateName = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), () -> {
 			if(u != null) {
-				if(u.getPrimaryGroup().equals("admin") || u.getPrimaryGroup().equals("owner") 
-						|| u.getPrimaryGroup().equals("manager") || u.getPrimaryGroup().equals("mod") || u.getPrimaryGroup().equals("helper") || u.getPrimaryGroup().equals("famous")) {
+				if(u.getPrimaryGroup().equals("admininstrator") || u.getPrimaryGroup().equals("owner") 
+						|| u.getPrimaryGroup().equals("manager") || u.getPrimaryGroup().equals("moderator") || u.getPrimaryGroup().equals("helper") || u.getPrimaryGroup().equals("media")) {
 					String rank = "[" + getFormattedRank(u.getPrimaryGroup()) + "] " + name;
 					if(!member.getNickname().equals(rank)) {
 						member.modifyNickname(rank).queue();
@@ -190,6 +190,12 @@ public class JoinListener implements Listener {
 	
 	private static String getFormattedRank(String rank) {
 		String formattedRank = rank;
+		if(formattedRank.equals("administrator")) {
+			formattedRank = "admin";
+		}
+		else if(formattedRank.equals("moderator")) {
+			formattedRank = "mod";
+		}
 		formattedRank = formattedRank.replaceAll("a", "ᴀ");
 		formattedRank = formattedRank.replaceAll("d", "ᴅ");
 		formattedRank = formattedRank.replaceAll("m", "ᴍ");

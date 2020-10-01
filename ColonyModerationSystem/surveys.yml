@@ -1,0 +1,27 @@
+surveys:
+  'general':
+    title: "  &5&lGeneral Survey"
+    questions:
+      '0':
+        value: "How would rate your overall experience?"
+        responses:
+          - "%star%"
+          - "%star%"
+          - "%star%"
+          - "%star%"
+          - "%star%"
+      '1':
+        value: "Have you encountered any bugs yet?"
+        responses:
+          - "Yes, a lot >:("
+          - "Yes, at least 5"
+          - "Just one or two"
+          - "No, not even one"
+      '2':
+        value: "How enjoyable did you find our games?"
+        responses: 
+          - "%star%"
+          - "%star%"
+          - "%star%"
+          - "%star%"
+          - "%star%"

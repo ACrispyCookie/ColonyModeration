@@ -1,14 +1,23 @@
 package net.colonymc.moderationsystem.bungee;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
+import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.bans.MassPunishment;
 import net.colonymc.moderationsystem.bungee.bans.Punishment;
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
+import net.colonymc.moderationsystem.bungee.feedback.Feedback;
 import net.colonymc.moderationsystem.bungee.queue.Queue;
 import net.colonymc.moderationsystem.bungee.reports.Report;
+import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
+import net.colonymc.moderationsystem.bungee.staffmanager.StaffMember;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -21,7 +30,7 @@ public class SpigotConnector implements Listener {
 	
 	@EventHandler
 	public void onMessage(PluginMessageEvent e) {
-		if(!e.getTag().equals("BanChannel") && !e.getTag().equals("ReportChannel") && !e.getTag().equals("DiscordChannel") && !e.getTag().equals("QueueChannel")) {
+		if(!e.getTag().equals("BanChannel") && !e.getTag().equals("ReportChannel") && !e.getTag().equals("DiscordChannel") && !e.getTag().equals("QueueChannel") && !e.getTag().equals("ManagerChannel") && !e.getTag().equals("FeedbackChannel")) {
 			return;
 		}
 		ByteArrayDataInput in = ByteStreams.newDataInput(e.getData());
@@ -124,6 +133,91 @@ public class SpigotConnector implements Listener {
 				}
 			}
 		}
+		else if(e.getTag().equalsIgnoreCase("ManagerChannel")) {
+			if(subChannel.equals("PromotePlayer")) {
+				String playerUuid = in.readUTF();
+				String target = in.readUTF();
+				String rank = in.readUTF();
+				if(StaffMember.getByUuid(target) != null) {
+					StaffMember.getByUuid(target).promote(Rank.valueOf(rank), playerUuid);
+				}
+				else {
+					StaffMember.addPlayer(target, playerUuid, Rank.valueOf(rank));
+				}
+			}
+			if(subChannel.equals("DemotePlayer")) {
+				String playerUuid = in.readUTF();
+				String target = in.readUTF();
+				String rank = in.readUTF();
+				StaffMember.getByUuid(target).demote(Rank.valueOf(rank), playerUuid);
+			}
+			if(subChannel.equals("VoteStaff")) {
+				String staffUuid = in.readUTF();
+				int stars = Integer.parseInt(in.readUTF());
+				MainDatabase.sendStatement("INSERT INTO StaffFeedback (uuid, stars, timestamp) VALUES ('" + staffUuid + "', " + stars + ", " + System.currentTimeMillis() + ")");
+			}
+		}
+		else if(e.getTag().equalsIgnoreCase("FeedbackChannel")) {
+			if(subChannel.equals("AnswerQuestion")) {
+				String playerUuid = in.readUTF();
+				String id = in.readUTF();
+				String jsonString;
+				try {
+					JSONObject answer = (JSONObject) new JSONParser().parse(in.readUTF());
+					jsonString = answer.toJSONString();
+					Feedback f = Main.getFeedback().getById(id);
+					f.answer(playerUuid, jsonString);
+				} catch (ParseException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void openSurveyMenu(ServerInfo s, String playerName, Feedback f) {
+	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
+	    out.writeUTF("AskQuestion");
+	    out.writeUTF(playerName);
+	    out.writeUTF(f.getId());
+	    out.writeUTF(f.getTitle());
+	    JSONObject questions = new JSONObject();
+	    JSONObject answers = new JSONObject();
+	    for(Integer ss : f.getQuestions().keySet()) {
+		    questions.put(String.valueOf(ss), f.getQuestions().get(ss));
+		    JSONArray a = new JSONArray();
+		    for(String answer : f.getOptions().get(ss)) {
+			    a.add(answer);
+		    }
+		    answers.put(String.valueOf(ss), a);
+	    }
+    	out.writeUTF(questions.toJSONString());
+    	out.writeUTF(answers.toJSONString());
+	    s.sendData("FeedbackChannel", out.toByteArray());
+	}
+	
+	public static void openManagerMenu(ServerInfo s, String playerName) {
+	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
+	    out.writeUTF("ManagerMenu");
+	    out.writeUTF(playerName);
+	    s.sendData("ManagerChannel", out.toByteArray());
+	}
+	
+	public static void openManagerMenu(ServerInfo s, String playerName, String target) {
+	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
+	    out.writeUTF("ManagerMenuPlayer");
+	    out.writeUTF(playerName);
+	    out.writeUTF(target);
+	    s.sendData("ManagerChannel", out.toByteArray());
+	}
+	
+	public static void openActionMenu(ServerInfo s, String playerName, String target, String action) {
+	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
+	    out.writeUTF("ActionMenu");
+	    out.writeUTF(playerName);
+	    out.writeUTF(target);
+	    out.writeUTF(action);
+	    s.sendData("ManagerChannel", out.toByteArray());
 	}
 	
 	public static void sendReports(ServerInfo s) {

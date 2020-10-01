@@ -5,13 +5,14 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.Time;
 import net.colonymc.moderationsystem.Messages;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -36,7 +37,7 @@ public class CheckCommand extends Command {
 							String reason = rs.getString("reason");
 							long bannedUntilFinal = rs.getLong("bannedUntil") - System.currentTimeMillis();
 							String ID = rs.getString("ID");
-							String bannedForAnother = getDurationString(bannedUntilFinal);
+							String bannedForAnother = Time.formatted(bannedUntilFinal);
 							TextComponent finalText = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m------------------&r &d#" + ID + " ban &f&m------------------"));
 							finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fPlayer's Name: \n    &d" + playerName));
 							finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n\n &5&l» &fPlayer's UUID: \n    &d" + uuid));
@@ -58,7 +59,7 @@ public class CheckCommand extends Command {
 								String bannedAt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(mute.getLong("issuedAt")));
 								long bannedUntilFinal = mute.getLong("mutedUntil") - System.currentTimeMillis();
 								String ID = mute.getString("ID");
-								String bannedForAnother = getDurationString(bannedUntilFinal);
+								String bannedForAnother = Time.formatted(bannedUntilFinal);
 								TextComponent finalText = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m------------------&r &d#" + ID + " mute &f&m------------------"));
 								finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fPlayer's Name: \n    &d" + playerName));
 								finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n\n &5&l» &fPlayer's UUID: \n    &d" + uuid));
@@ -161,10 +162,21 @@ public class CheckCommand extends Command {
 								header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l»   - &fMute ID: &d" + muteID)));
 							}
 							if(!alts.isEmpty()) {
-								header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fAlts:")));
+								header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fAlts: &d[")));
 								for(int i = 0; i < alts.size(); i++) {
-									header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l»   - &d" + alts.get(i))));
+									if(i + 1 == alts.size()) {
+										header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&d" + alts.get(i) + "]")));
+									}
+									else {
+										header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&d" + alts.get(i) + ",")));
+									}
 								}
+							}
+							if(MainDatabase.isStaff(args[0])) {
+								TextComponent text = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n \n &5&l» &dClick to perform a staff check on this player!"));
+								text.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/staffmanager " + args[0]));
+								header.addExtra(text);
+								
 							}
 							header.addExtra(footer);
 							sender.sendMessage(header);
@@ -189,42 +201,5 @@ public class CheckCommand extends Command {
 		else {
 			sender.sendMessage(new TextComponent(Messages.noPerm));
 		}
-	}
-	
-	public String getDurationString(long duration) {
-		String durationString = null;
-		if(duration == -1) {
-			durationString = "Never";
-			return durationString;
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) > 0) {
-			durationString = String.format("%d days, %d hours, %d minutes, %d seconds",
-					TimeUnit.MILLISECONDS.toDays(duration),
-					TimeUnit.MILLISECONDS.toHours(duration) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration)),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-			
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) == 0) {
-			durationString = String.format("%d hours, %d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toHours(duration),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toHours(duration) == 0) {
-			durationString = String.format("%d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toMinutes(duration),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toMinutes(duration) == 0) {
-			durationString = String.format("%d seconds", 
-					TimeUnit.MILLISECONDS.toSeconds(duration)
-					);
-			
-		}
-		return durationString;
 	}
 }

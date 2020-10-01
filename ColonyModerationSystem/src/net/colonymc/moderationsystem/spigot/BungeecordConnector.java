@@ -4,28 +4,41 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
+import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
+import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.bans.ChoosePlayerMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseReasonMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseTypeMenu;
+import net.colonymc.moderationsystem.spigot.feedback.BFeedback;
 import net.colonymc.moderationsystem.spigot.reports.ArchivedReportsMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportsMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.AddStaffMemberMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.BStaffMember;
+import net.colonymc.moderationsystem.spigot.staffmanager.SelectRankMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerPlayerMenu;
 import net.colonymc.moderationsystem.spigot.twofa.Freeze;
 
 public class BungeecordConnector implements PluginMessageListener {
 	
 	@Override
 	public void onPluginMessageReceived(String channel, Player p, byte[] data) {
-		if(!channel.equals("BanChannel") && !channel.equals("ReportChannel") && !channel.equals("DiscordChannel")) {
+		if(!channel.equals("BanChannel") && !channel.equals("ReportChannel") && !channel.equals("DiscordChannel") && !channel.equals("ManagerChannel") && !channel.equals("FeedbackChannel")) {
 			return;
 		}
 		ByteArrayDataInput in = ByteStreams.newDataInput(data);
@@ -76,6 +89,120 @@ public class BungeecordConnector implements PluginMessageListener {
 				String playerName = in.readUTF();
 				new ArchivedReportsMenu(Bukkit.getPlayerExact(playerName));
 			}
+		}
+		else if(channel.equals("ManagerChannel")) {
+			if(subchannel.equals("ManagerMenu")) {
+				String playerName = in.readUTF();
+				new StaffManagerMenu(Bukkit.getPlayerExact(playerName));
+			}
+			else if(subchannel.equals("ManagerMenuPlayer")) {
+				String playerName = in.readUTF();
+				String target = in.readUTF();
+				BStaffMember.loadStaff();
+				new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target));
+			}
+			else if(subchannel.equals("ActionMenu")) {
+				String playerName = in.readUTF();
+				String target = in.readUTF();
+				String action = in.readUTF();
+				BStaffMember.loadStaff();
+				if(BStaffMember.getByUuid(target) != null) {
+					new SelectRankMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), StaffAction.valueOf(action));
+				}
+				else {
+					new AddStaffMemberMenu(Bukkit.getPlayerExact(playerName), target);
+				}
+			}
+		}
+		else if(channel.equals("FeedbackChannel")) {
+			if(subchannel.equals("AskQuestion")) {
+				String playerName = in.readUTF();
+				String id = in.readUTF();
+				String title = in.readUTF();
+				String jsonQuestion = in.readUTF();
+				String jsonAnswer = in.readUTF();
+				HashMap<Integer, String> questions = new HashMap<Integer, String>();
+				HashMap<Integer, String[]> options = new HashMap<Integer, String[]>();
+				try {
+					JSONObject jq = (JSONObject) new JSONParser().parse(jsonQuestion);
+					JSONObject ja = (JSONObject) new JSONParser().parse(jsonAnswer);
+					for(int i = 0; i < jq.size(); i++) {
+						JSONArray jr = (JSONArray) ja.get(String.valueOf(i));
+						String[] responses = new String[jr.size()];
+						for(int c = 0; c < jr.size(); c++) {
+							responses[c] = (String) jr.get(c);
+						}
+						
+						questions.put(i, (String) jq.get(String.valueOf(i)));
+						options.put(i, responses);
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				BFeedback f = new BFeedback(id, title, questions, options, Bukkit.getPlayerExact(playerName));
+				f.ask();
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void answerQuestion(Player p, String id, HashMap<Integer, String> answers) {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(bytes);
+		try {
+			out.writeUTF("AnswerQuestion");
+			out.writeUTF(p.getUniqueId().toString());
+			out.writeUTF(id);
+			JSONObject j = new JSONObject();
+			for(Integer i : answers.keySet()) {
+				j.put(String.valueOf(i), answers.get(i));
+			}
+			out.writeUTF(j.toJSONString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		p.sendPluginMessage(Main.getInstance(), "FeedbackChannel", bytes.toByteArray());
+	}
+	
+	public static void voteStaff(Player p, String staffUuid, int stars) {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(bytes);
+		try {
+			out.writeUTF("VoteStaff");
+			out.writeUTF(staffUuid);
+			out.writeUTF(String.valueOf(stars));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		p.sendPluginMessage(Main.getInstance(), "ManagerChannel", bytes.toByteArray());
+	}
+	
+	public static void actionOnStaff(Player p, String actedUuid, StaffAction action, Rank rank) {
+		if(action == StaffAction.PROMOTE) {
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+			DataOutputStream out = new DataOutputStream(bytes);
+			try {
+				out.writeUTF("PromotePlayer");
+				out.writeUTF(p.getUniqueId().toString());
+				out.writeUTF(actedUuid);
+				out.writeUTF(rank.name());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			p.sendPluginMessage(Main.getInstance(), "ManagerChannel", bytes.toByteArray());
+		}
+		else {
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+			DataOutputStream out = new DataOutputStream(bytes);
+			try {
+				out.writeUTF("DemotePlayer");
+				out.writeUTF(p.getUniqueId().toString());
+				out.writeUTF(actedUuid);
+				out.writeUTF(rank.name());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			p.sendPluginMessage(Main.getInstance(), "ManagerChannel", bytes.toByteArray());
 		}
 	}
 	

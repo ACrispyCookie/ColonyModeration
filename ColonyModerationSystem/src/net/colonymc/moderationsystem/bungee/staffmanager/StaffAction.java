@@ -1,6 +1,6 @@
 package net.colonymc.moderationsystem.bungee.staffmanager;
 
-enum StaffAction {
+public enum StaffAction {
 	PROMOTE,
 	DEMOTE;
 }

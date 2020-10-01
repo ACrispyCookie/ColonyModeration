@@ -21,6 +21,13 @@ import net.colonymc.moderationsystem.spigot.reports.Report;
 import net.colonymc.moderationsystem.spigot.reports.ReportMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportsMenu;
 import net.colonymc.moderationsystem.spigot.reports.SelectExistingMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.AddStaffMemberMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.AllStaffManagerMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.SearchStaffMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.SelectRankMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerPlayerMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.TopStaffManagerMenu;
 import net.colonymc.moderationsystem.spigot.twofa.Freeze;
 import net.luckperms.api.LuckPerms;
 
@@ -72,6 +79,10 @@ public class Main extends JavaPlugin {
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "DiscordChannel", new BungeecordConnector());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "StaffModeChannel");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "StaffModeChannel", new BungeecordConnector());
+		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "ManagerChannel");
+		this.getServer().getMessenger().registerIncomingPluginChannel(this, "ManagerChannel", new BungeecordConnector());
+		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "FeedbackChannel");
+		this.getServer().getMessenger().registerIncomingPluginChannel(this, "FeedbackChannel", new BungeecordConnector());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "QueueChannel");
 		this.getServer().getPluginManager().registerEvents(new SpigotDatabaseListener(), this);
 		this.getServer().getPluginManager().registerEvents(new ChoosePlayerMenu(), this);
@@ -84,6 +95,13 @@ public class Main extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new ReportMenu(), this);
 		this.getServer().getPluginManager().registerEvents(new ProcessReport(), this);
 		this.getServer().getPluginManager().registerEvents(new SelectExistingMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new AllStaffManagerMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new StaffManagerMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new StaffManagerPlayerMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new TopStaffManagerMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new SelectRankMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new AddStaffMemberMenu(), this);
+		this.getServer().getPluginManager().registerEvents(new SearchStaffMenu(), this);
 		this.getCommand("queue").setExecutor(new QueueCommand());
 		this.getCommand("leavequeue").setExecutor(new LeaveQueueCommand());
 	}

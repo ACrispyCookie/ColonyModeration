@@ -3,6 +3,8 @@ package net.colonymc.moderationsystem.bungee;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -28,6 +30,8 @@ import net.colonymc.moderationsystem.bungee.discord.DiscordMute;
 import net.colonymc.moderationsystem.bungee.discord.DiscordPunishCommand;
 import net.colonymc.moderationsystem.bungee.discord.DiscordUser;
 import net.colonymc.moderationsystem.bungee.discord.RoleCommand;
+import net.colonymc.moderationsystem.bungee.feedback.FeedbackCommand;
+import net.colonymc.moderationsystem.bungee.feedback.FeedbackManager;
 import net.colonymc.moderationsystem.bungee.queue.LeaveQueueCommand;
 import net.colonymc.moderationsystem.bungee.queue.Queue;
 import net.colonymc.moderationsystem.bungee.queue.QueueCommand;
@@ -38,6 +42,7 @@ import net.colonymc.moderationsystem.bungee.reports.ReportsCommand;
 import net.colonymc.moderationsystem.bungee.staffmanager.DemoteCommand;
 import net.colonymc.moderationsystem.bungee.staffmanager.PromoteCommand;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffJoinListener;
+import net.colonymc.moderationsystem.bungee.staffmanager.StaffManagerCommand;
 import net.colonymc.moderationsystem.bungee.twofa.FreezeSession;
 import net.colonymc.moderationsystem.bungee.twofa.LinkCommand;
 import net.colonymc.moderationsystem.bungee.twofa.LinkedPlayer;
@@ -59,6 +64,9 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 
 public class Main extends Plugin {
  	
@@ -66,6 +74,8 @@ public class Main extends Plugin {
 	private ScheduledTask databaseLoader;
 	private static LuckPerms luckPerms;
 	private static Main instance;
+	private static FeedbackManager feedback;
+	private static Configuration feedbackConfig;
 	private static JDA jda;
 	boolean started = false;
 	
@@ -85,6 +95,7 @@ public class Main extends Plugin {
 							loadDatabaseRequired();
 							loadLinkedPlayers();
 							setupRevokers();
+							setupFeedback();
 							logfile = new File(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt");
 							luckPerms = LuckPermsProvider.get();
 							if(!logfile.exists()) {
@@ -207,6 +218,8 @@ public class Main extends Plugin {
 		getProxy().registerChannel("BanChannel");
 		getProxy().registerChannel("DiscordChannel");
 		getProxy().registerChannel("StaffModeChannel");
+		getProxy().registerChannel("ManagerChannel");
+		getProxy().registerChannel("FeedbackChannel");
 		getProxy().registerChannel("QueueChannel");
 		//listeners setup
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new DatabaseListener());
@@ -238,6 +251,8 @@ public class Main extends Plugin {
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new RoleCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new DemoteCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new PromoteCommand());
+		ProxyServer.getInstance().getPluginManager().registerCommand(this, new StaffManagerCommand());
+		ProxyServer.getInstance().getPluginManager().registerCommand(this, new FeedbackCommand());
 		jda.addEventListener(new LinkCommand());
 		jda.addEventListener(new FreezeSession());
 		jda.addEventListener(new DiscordListeners());
@@ -346,6 +361,26 @@ public class Main extends Plugin {
 		System.out.println("[ColonyModerationSystem] Successfully started " + mutes + " discord mute revokers!");
 	}
 	
+	private void setupFeedback() {
+		try {
+			if (!getDataFolder().exists()) {
+	            getDataFolder().mkdir();
+			}
+	        File file = new File(getDataFolder(), "surveys.yml");
+	        if (!file.exists()) {
+	            try (InputStream in = getResourceAsStream("surveys.yml")) {
+	                Files.copy(in, file.toPath());
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
+	        }
+			feedbackConfig = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(getDataFolder(), "surveys.yml"));
+			feedback = new FeedbackManager(feedbackConfig);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void writeToLog(String s) {
 		try {
 			FileWriter fw = new FileWriter(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt", true);
@@ -363,6 +398,10 @@ public class Main extends Plugin {
 	
 	private static void setInstance(Main instance) {
 		Main.instance = instance;
+	}
+	
+	public static FeedbackManager getFeedback() {
+		return feedback;
 	}
 	
 	public static User getUser(long userID) {

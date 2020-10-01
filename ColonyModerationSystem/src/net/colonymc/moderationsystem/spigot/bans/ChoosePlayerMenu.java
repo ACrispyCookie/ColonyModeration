@@ -93,12 +93,12 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 		inv.setItem(46, new SkullItemBuilder()
 				.url("http://textures.minecraft.net/texture/28d3c19dd0179f0b220dbdb313f92d062a9db9397288c8b3429fa817e43a6f95")
 				.name("&dLobby players")
-				.lore("\n&fClick here to display\\n&fonline players on the &dlobby&f!")
+				.lore("\n&fClick here to display\n&fonline players on the &dlobby&f!")
 				.build());
 		inv.setItem(47, new SkullItemBuilder()
 				.url("http://textures.minecraft.net/texture/48ad7ade366bb438d3672883e79e5d0ce90ba22ed1a6e23691f2992f1635f639")
 				.name("&dSkyblock players")
-				.lore("\n&fClick here to display\\n&fonline players on &dskyblock&f!")
+				.lore("\n&fClick here to display\n&fonline players on &dskyblock&f!")
 				.build());
 	}
 

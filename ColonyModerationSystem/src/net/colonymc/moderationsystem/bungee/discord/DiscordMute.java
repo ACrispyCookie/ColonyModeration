@@ -89,6 +89,8 @@ public class DiscordMute {
 		}
 		else {
 			Main.getGuild().getTextChannelById(722982663526416454L).retrieveMessageById(messageId).complete().delete().queue();
+			MainDatabase.sendStatement("INSERT INTO ArchivedDiscordBans (discordId, staffId, reason, type, issuedAt, bannedUntil) VALUES "
+					+ "( " + target.getIdLong() + ", " + staff.getIdLong() + ", '" + reason + "', 'mute', " + issuedAt + ", " + mutedUntil + ")");
 		}
 		MainDatabase.sendStatement("DELETE FROM DiscordBans WHERE discordId=" + target.getIdLong() + " AND type='mute';");
 		Main.removeRanksFromPlayer(target.getIdLong(), 714160930891759677L);
