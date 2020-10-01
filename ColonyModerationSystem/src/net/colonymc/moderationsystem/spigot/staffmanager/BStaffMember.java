@@ -296,10 +296,10 @@ public class BStaffMember {
 						mC++;
 					}
 				}
-				feedback.put(count, (double) totalStars / tC);
-				dFeedback.put(count, (double) dStars / dC);
-				wFeedback.put(count, (double) wStars / wC);
-				mFeedback.put(count, (double) mStars / mC);
+				feedback.put(count, (double) totalStars / (tC == 0 ? 1 : tC));
+				dFeedback.put(count, (double) dStars / (dC == 0 ? 1 : dC));
+				wFeedback.put(count, (double) wStars / (wC == 0 ? 1 : wC));
+				mFeedback.put(count, (double) mStars / (mC == 0 ? 1 : mC));
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
