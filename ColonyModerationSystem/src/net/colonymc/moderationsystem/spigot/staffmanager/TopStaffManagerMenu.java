@@ -9,11 +9,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
@@ -42,13 +44,14 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 	long nextW;
 	long nextM;
 	int timeLeft;
+	BukkitTask update;
 	
 	
 	public TopStaffManagerMenu(Player p) {
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, p.hasPermission("colonymc.staffmanager") ? 54 : 36, "Best" + (p.hasPermission("colonymc.staffmanager") ? "/Worst" : "") + " staff members");
 		setup();
-		new BukkitRunnable() {
+		update = new BukkitRunnable() {
 			@Override
 			public void run() {
 				fillInventory();
@@ -95,6 +98,14 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 	@Override
 	public Inventory getInventory() {
 		return inv;
+	}
+	
+	@EventHandler
+	public void onClick(InventoryCloseEvent e) {
+		if(e.getInventory().getHolder() instanceof TopStaffManagerMenu) {
+			TopStaffManagerMenu menu = (TopStaffManagerMenu) e.getInventory().getHolder();
+			menu.update.cancel();
+		}
 	}
 	
 	@EventHandler
