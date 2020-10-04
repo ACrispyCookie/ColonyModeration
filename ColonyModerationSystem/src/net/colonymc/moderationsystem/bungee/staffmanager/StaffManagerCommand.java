@@ -23,16 +23,21 @@ public class StaffManagerCommand extends Command {
 					SpigotConnector.openManagerMenu(p.getServer().getInfo(), p.getName());
 				}
 				else if(args.length == 1) {
-					if(MainDatabase.getUuid(args[0]) != null) {
-						if(MainDatabase.isStaff(args[0])) {
-							SpigotConnector.openManagerMenu(p.getServer().getInfo(), p.getName(), MainDatabase.getUuid(args[0]));
+					if(p.hasPermission("colonymc.staffmanager")) {
+						if(MainDatabase.getUuid(args[0]) != null) {
+							if(MainDatabase.isStaff(args[0])) {
+								SpigotConnector.openManagerMenu(p.getServer().getInfo(), p.getName(), MainDatabase.getUuid(args[0]));
+							}
+							else {
+								p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player is not a staff member!")));
+							}
 						}
 						else {
-							p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player is not a staff member!")));
+							p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player has never joined the server!")));
 						}
 					}
 					else {
-						p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player has never joined the server!")));
+						SpigotConnector.openManagerMenu(p.getServer().getInfo(), p.getName());
 					}
 				}
 			}

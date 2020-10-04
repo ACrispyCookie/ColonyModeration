@@ -26,16 +26,17 @@ public class SelectRankMenu implements Listener, InventoryHolder {
 	Player p;
 	Inventory inv;
 	BStaffMember b;
+	InventoryHolder i;
 	StaffAction action;
 	HashMap<Integer, Rank> ranks = new HashMap<Integer, Rank>();
 	
-	public SelectRankMenu(Player p, BStaffMember b, StaffAction action) {
+	public SelectRankMenu(Player p, BStaffMember b, StaffAction action, InventoryHolder i) {
 		this.p = p;
+		this.i = i;
 		this.b = b;
 		this.action = action;
 		this.inv = Bukkit.createInventory(this, 54, "Select a rank...");
 		fillInventory();
-		openInventory();
 	}
 	
 	public SelectRankMenu() {
@@ -109,7 +110,7 @@ public class SelectRankMenu implements Listener, InventoryHolder {
 				e.setCancelled(true);
 				if(e.getSlot() == 49) {
 					p.closeInventory();
-					new StaffManagerPlayerMenu(p, m.b);
+					new StaffManagerPlayerMenu(p, m.b, m.i).openInventory();
 				}
 				else if(m.ranks.containsKey(e.getSlot())) {
 					p.closeInventory();

@@ -36,7 +36,6 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 		this.inv = Bukkit.createInventory(this, 54, "Staff members");
 		BStaffMember.loadStaff();
 		fillInventory();
-		openInventory();
 	}
 	
 	public AllStaffManagerMenu() {
@@ -50,12 +49,12 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		inv.setItem(49, new ItemStackBuilder(Material.ARROW).name("&dGo back").build());
 		inv.setItem(50, new ItemStackBuilder(Material.INK_SACK).durability((short) (showingAll ? 10 : 8)).name((showingAll ? "&dHide" : "&dShow") + " retired staff members").build());
-		totalPages = (int) Math.ceil((double) (showingAll ? BStaffMember.getStaff().size() : BStaffMember.getStaff().size())/45);
+		totalPages = (int) Math.ceil((double) (showingAll ? BStaffMember.getAllStaff().size() : BStaffMember.getStaff().size())/45);
 		int notShowing = 0;
 		for(int i = 0; i < 45; i++) {
 			int index = i + (page * 45);
-			if(index <= BStaffMember.getStaff().size() - 1) {
-				BStaffMember b = BStaffMember.getStaff().get(index);
+			if(index <= BStaffMember.getAllStaff().size() - 1) {
+				BStaffMember b = BStaffMember.getAllStaff().get(index);
 				if(!b.isStaff() && !showingAll) {
 					notShowing++;
 					continue;
@@ -66,11 +65,16 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 				String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 				String rank = b.getRank().getName();
 				ItemStack item = new SkullItemBuilder().playerName(name).name((b.isStaff() ? "&d" : "&c") + name)
-						.lore("\n&5» &fRank: &d" + rank + 
+						.lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles()) +
+								"\n&5» &fRank: &d" + rank + 
 								"\n&5» &fJoined at: &d" + joinTimestamp + 
 								"\n&5» &fLeft at: &d" + leaveTimestamp + 
-								"\n \n" + (b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted\n&cbecause they no longer\n&chave their discord linked!"))
-								+ (b.isStaff() ? "" : "\n \n&cThis player is no longer a staff member!")).build();
+								"\n "
+								+ "\n " + (b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
+										+ "\n&cbecause they no longer"
+										+ "\n&chave their discord linked!"))
+								+ (b.isStaff() ? "" : "\n "
+										+ "\n&cThis player is no longer a staff member!")).build();
 				inv.setItem(i - notShowing, item);
 				staff.put(i - notShowing, b);
 			}
@@ -116,16 +120,16 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 				if(m.staff.containsKey(e.getSlot())) {
 					if(m.staff.get(e.getSlot()).isStaff()) {
 						p.closeInventory();
-						new StaffManagerPlayerMenu(p, m.staff.get(e.getSlot()));
+						new StaffManagerPlayerMenu(p, m.staff.get(e.getSlot()), m).openInventory();
 					}
 					else if(MainDatabase.getDiscordId(m.staff.get(e.getSlot()).getUuid()) != 0){
 						p.closeInventory();
-						new AddStaffMemberMenu(p, m.staff.get(e.getSlot()).getUuid());
+						new AddStaffMemberMenu(p, m.staff.get(e.getSlot()).getUuid()).openInventory();
 					}
 				}
 				else if(e.getSlot() == 49) {
 					p.closeInventory();
-					new StaffManagerMenu(p);
+					new StaffManagerMenu(p).openInventory();
 				}
 				else if(e.getSlot() == 50) {
 					m.showingAll = !m.showingAll;

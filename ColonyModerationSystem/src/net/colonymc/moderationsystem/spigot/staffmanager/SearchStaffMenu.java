@@ -44,7 +44,6 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 		this.inv = Bukkit.createInventory(this, 54, "Staff found: " + found.size());
 		BStaffMember.loadStaff();
 		fillInventory();
-		openInventory();
 	}
 	
 	public SearchStaffMenu() {
@@ -124,16 +123,16 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 				if(m.staff.containsKey(e.getSlot())) {
 					if(m.staff.get(e.getSlot()).isStaff()) {
 						p.closeInventory();
-						new StaffManagerPlayerMenu(p, m.staff.get(e.getSlot()));
+						new StaffManagerPlayerMenu(p, m.staff.get(e.getSlot()), m).openInventory();
 					}
 					else if(MainDatabase.getDiscordId(m.staff.get(e.getSlot()).getUuid()) != 0){
 						p.closeInventory();
-						new AddStaffMemberMenu(p, m.staff.get(e.getSlot()).getUuid());
+						new AddStaffMemberMenu(p, m.staff.get(e.getSlot()).getUuid()).openInventory();
 					}
 				}
 				else if(e.getSlot() == 49) {
 					p.closeInventory();
-					new StaffManagerMenu(p);
+					new StaffManagerMenu(p).openInventory();
 				}
 				else if(e.getSlot() == 50) {
 					m.showingAll = !m.showingAll;

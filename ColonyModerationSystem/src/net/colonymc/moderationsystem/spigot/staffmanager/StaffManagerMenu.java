@@ -27,7 +27,6 @@ public class StaffManagerMenu implements Listener, InventoryHolder {
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, p.hasPermission("colonymc.staffmanager") ? 45 : 27, "Staff Manager");
 		fillInventory();
-		openInventory();
 	}
 	
 	public StaffManagerMenu() {
@@ -94,10 +93,10 @@ public class StaffManagerMenu implements Listener, InventoryHolder {
 				Player p = (Player) e.getWhoClicked();
 				if(p.hasPermission("colonymc.staffmanager")) {
 					if(e.getSlot() == 20) {
-						new AllStaffManagerMenu(p);
+						new AllStaffManagerMenu(p).openInventory();
 					}
 					else if(e.getSlot() == 22) {
-						new TopStaffManagerMenu(p);
+						new TopStaffManagerMenu(p).openInventory();
 					}
 					else if(e.getSlot() == 24) {
 						p.closeInventory();
@@ -106,7 +105,7 @@ public class StaffManagerMenu implements Listener, InventoryHolder {
 							public void onSignDone(Player player, String[] lines) {
 								String msg = lines[0].replaceAll("\"", "");
 								if(!msg.isEmpty()) {
-									new SearchStaffMenu(p, msg);
+									new SearchStaffMenu(p, msg).openInventory();
 								}
 								else {
 									p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
@@ -118,10 +117,10 @@ public class StaffManagerMenu implements Listener, InventoryHolder {
 				}
 				else {
 					if(e.getSlot() == 11) {
-						new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(p.getUniqueId().toString()));
+						new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(p.getUniqueId().toString()), e.getInventory().getHolder()).openInventory();
 					}
 					else if(e.getSlot() == 15){
-						new TopStaffManagerMenu(p);
+						new TopStaffManagerMenu(p).openInventory();
 					}
 				}
 			}

@@ -26,6 +26,12 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 
 	Inventory inv;
 	Player p;
+	String tDor;
+	String tWor;
+	String tMor;
+	String wDor;
+	String wWor;
+	String wMor;
 	String tD;
 	String tW;
 	String tM;
@@ -47,8 +53,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 			public void run() {
 				fillInventory();
 			}
-		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 3);
-		openInventory();
+		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 20);
 	}
 	
 	public TopStaffManagerMenu() {
@@ -101,12 +106,42 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 				Player p = menu.p;
 				if(p.hasPermission("colonymc.staffmanager")) {
 					if(e.getSlot() == 49) {
-						new StaffManagerMenu(p);
+						new StaffManagerMenu(p).openInventory();
+					}
+					else if(e.getSlot() == 11) {
+						if(menu.nextD - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tD), menu).openInventory();
+						}
+					}
+					else if(e.getSlot() == 13) {
+						if(menu.nextW - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tW), menu).openInventory();
+						}
+					}
+					else if(e.getSlot() == 15) {
+						if(menu.nextM - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tM), menu).openInventory();
+						}
+					}
+					else if(e.getSlot() == 29) {
+						if(menu.nextD - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wD), menu).openInventory();
+						}
+					}
+					else if(e.getSlot() == 31) {
+						if(menu.nextW - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wW), menu).openInventory();
+						}
+					}
+					else if(e.getSlot() == 33) {
+						if(menu.nextM - System.currentTimeMillis() > 7200000) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wM), menu).openInventory();
+						}
 					}
 				}
 				else {
 					if(e.getSlot() == 31) {
-						new StaffManagerMenu(p);
+						new StaffManagerMenu(p).openInventory();
 					}
 				}
 			}
@@ -126,6 +161,12 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 				wD = rs.getString("wDaily");
 				wW = rs.getString("wWeekly");
 				wM = rs.getString("wMonthly");
+				tDor = rs.getString("dP");
+				tWor = rs.getString("wP");
+				tMor = rs.getString("MP");
+				wDor = rs.getString("wdP");
+				wWor = rs.getString("wwP");
+				wMor = rs.getString("wmP");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -153,7 +194,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 							+ "\n&fthe &dday &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tD) + " &kO&r &f- &d" + BStaffMember.getByUuid(tD).getDailyOvr() + " rating"
+							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tD) + " &kO&r &f- &d" + tDor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
@@ -184,7 +225,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 							+ "\n&fthe &dweek &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tW) + " &kO&r &f- &d" + BStaffMember.getByUuid(tW).getWeeklyOvr() + " rating"
+							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tW) + " &kO&r &f- &d" + tWor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
@@ -198,9 +239,9 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		if(nextM - System.currentTimeMillis() < 7200000) {
 			return new SkullItemBuilder()
 					.url("http://textures.minecraft.net/texture/fe5653187521d752a91b163a62d587d2bce65c869ca996825271f6b4539cf2f")
-					.name("&cStaff member of the week")
+					.name("&cStaff member of the month")
 					.lore("\n&fThe new staff member of"
-							+ "\n&fthe &dweek &fhas not been"
+							+ "\n&fthe &dmonth &fhas not been"
 							+ "\n&fannounced yet. Please wait"
 							+ "\n&fanother &d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
 							+ "\n "
@@ -210,12 +251,12 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		else {
 			return new SkullItemBuilder()
 					.playerName(MainDatabase.getName(tM))
-					.name("&dStaff member of the week")
+					.name("&dStaff member of the month")
 					.lore("\n&fThe new staff member of"
-							+ "\n&fthe &dweek &fis..."
+							+ "\n&fthe &dmonth &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tM) + " &kO&r &f- &d" + BStaffMember.getByUuid(tM).getMonthlyOvr() + " rating"
+							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tM) + " &kO&r &f- &d" + tMor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
@@ -246,7 +287,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 							+ "\n&fthe &dday &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wD) + " &kO&r &f- &d" + BStaffMember.getByUuid(wD).getDailyOvr() + " rating"
+							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wD) + " &kO&r &f- &d" + wDor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
@@ -277,7 +318,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 							+ "\n&fthe &dweek &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wW) + " &kO&r &f- &d" + BStaffMember.getByUuid(wW).getWeeklyOvr() + " rating"
+							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wW) + " &kO&r &f- &d" + wWor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
@@ -308,7 +349,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 							+ "\n&fthe &dmonth &fis..."
 							+ "\n&7&o(DRUM ROLL...)"
 							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wM) + " &kO&r &f- &d" + BStaffMember.getByUuid(wM).getMonthlyOvr() + " rating"
+							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wM) + " &kO&r &f- &d" + wMor + " rating"
 							+ "\n "
 							+ "\n&fTime remaining for the new one:"
 							+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)

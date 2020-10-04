@@ -80,6 +80,8 @@ public class TopStaffAnnouncer {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
+		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
@@ -87,6 +89,7 @@ public class TopStaffAnnouncer {
 			int ovr = m.getDailyOvr();
 			if(staff == null || ovr > staff.getDailyOvr()) {
 				staff = m;
+				tOvr = ovr;
 			}
 		}
 		for(BStaffMember m : BStaffMember.getStaff()) {
@@ -96,16 +99,21 @@ public class TopStaffAnnouncer {
 			int ovr = m.getDailyOvr();
 			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET daily='" + staff.getUuid() + "';");
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily='" + wStaff.getUuid() + "';");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET dP=" + tOvr + ";");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET wdP=" + wOvr + ";");
 	}
 	
 	private void decideWeek() {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
+		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
@@ -113,6 +121,7 @@ public class TopStaffAnnouncer {
 			int ovr = m.getDailyOvr();
 			if(staff == null || ovr > staff.getDailyOvr()) {
 				staff = m;
+				tOvr = ovr;
 			}
 		}
 		for(BStaffMember m : BStaffMember.getStaff()) {
@@ -122,16 +131,21 @@ public class TopStaffAnnouncer {
 			int ovr = m.getDailyOvr();
 			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly='" + staff.getUuid() + "';");
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly='" + wStaff.getUuid() + "';");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET wP=" + tOvr + ";");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET wwP=" + wOvr + ";");
 	}
 	
 	private void decideMonth() {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
+		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
@@ -139,6 +153,7 @@ public class TopStaffAnnouncer {
 			int ovr = m.getMonthlyOvr();
 			if(staff == null || ovr > staff.getMonthlyOvr()) {
 				staff = m;
+				tOvr = ovr;
 			}
 		}
 		for(BStaffMember m : BStaffMember.getStaff()) {
@@ -148,10 +163,13 @@ public class TopStaffAnnouncer {
 			int ovr = m.getDailyOvr();
 			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET monhtly='" + staff.getUuid() + "';");
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonhtly='" + wStaff.getUuid() + "';");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET mP=" + tOvr + ";");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET wmP=" + wOvr + ";");
 	}
 
 }

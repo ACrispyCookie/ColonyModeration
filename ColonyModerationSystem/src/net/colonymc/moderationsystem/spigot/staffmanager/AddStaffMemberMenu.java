@@ -28,7 +28,6 @@ public class AddStaffMemberMenu implements Listener, InventoryHolder {
 		this.uuid = uuid;
 		this.inv = Bukkit.createInventory(this, p.getUniqueId().toString().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f") ? 36 : 27, "Add player to staff team?");
 		fillInventory();
-		openInventory();
 	}
 	
 	public AddStaffMemberMenu() {

@@ -32,13 +32,14 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 	Player p;
 	Inventory inv;
 	BStaffMember b;
+	InventoryHolder i;
 	
-	public StaffManagerPlayerMenu(Player p, BStaffMember b) {
+	public StaffManagerPlayerMenu(Player p, BStaffMember b, InventoryHolder i) {
 		this.p = p;
 		this.b = b;
+		this.i = i;
 		this.inv = Bukkit.createInventory(this, 45, "Managing " + MainDatabase.getName(b.getUuid()) + "...");
 		fillInventory();
-		openInventory();
 	}
 	
 	public StaffManagerPlayerMenu() {
@@ -51,7 +52,8 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String joinTimestamp = sdf.format(new Date(b.getJoin()));
 		String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 		String rank = b.getRank().getName();
-		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore("\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
+		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles())
+				+ "\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
 			if(p.hasPermission("colonymc.staffmanager")) {
@@ -102,25 +104,25 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 				if(p.hasPermission("colonymc.staffmanager")) {
 					if(e.getSlot() == 40) {
 						p.closeInventory();
-						new AllStaffManagerMenu(p);
+						p.openInventory(m.i.getInventory());
 					}
 					else if(e.getSlot() == 12) {
 						if(b.getRank() != Rank.KNIGHT) {
 							p.closeInventory();
-							new SelectRankMenu(p, m.b, StaffAction.DEMOTE);
+							new SelectRankMenu(p, m.b, StaffAction.DEMOTE, m.i).openInventory();
 						}
 					}
 					else if(e.getSlot() == 14) {
 						if(b.getRank() != Rank.OWNER) {
 							p.closeInventory();
-							new SelectRankMenu(p, m.b, StaffAction.PROMOTE);
+							new SelectRankMenu(p, m.b, StaffAction.PROMOTE, m.i).openInventory();
 						}
 					}
 				}
 				else {
 					if(e.getSlot() == 40) {
 						p.closeInventory();
-						new StaffManagerMenu(p);
+						new StaffManagerMenu(p).openInventory();
 					}
 				}
 			}

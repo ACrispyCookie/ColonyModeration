@@ -35,6 +35,12 @@ public class BStaffMember {
 	HashMap<String, Double> wFeedback = new HashMap<String, Double>();
 	HashMap<String, Double> mFeedback = new HashMap<String, Double>();
 	HashMap<String, Double> feedback = new HashMap<String, Double>();
+	static String smod;
+	static String smow;
+	static String smom;
+	static String wsmod;
+	static String wsmow;
+	static String wsmom;
 	static ArrayList<BStaffMember> staff = new ArrayList<BStaffMember>();
 	static ArrayList<BStaffMember> allStaff = new ArrayList<BStaffMember>();
 	
@@ -119,6 +125,87 @@ public class BStaffMember {
 			}
 		}
 		return s;
+	}
+	
+	public String getTitles() {
+		long nextD = 0;
+		long nextW = 0;
+		long nextM = 0;
+		ResultSet rs = MainDatabase.getResultSet("SELECT * FROM NextTopStaff WHERE id=0;");
+		try {
+			if(rs.next()) {
+				nextD = rs.getLong("nextDay");
+				nextW = rs.getLong("nextWeek");
+				nextM = rs.getLong("nextMonth");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		String title = "";
+		if(nextD - System.currentTimeMillis() > 7200000) {
+			if(smod.equals(uuid)) {
+				title = "\n&d&kO&r &d&lSTAFF MEMBER OF THE DAY &kO&r";
+			}
+		}
+		if(nextW - System.currentTimeMillis() > 7200000) {
+			if(smow.equals(uuid)) {
+				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE WEEK &kO&r";
+			}
+		}
+		if(nextM - System.currentTimeMillis() > 7200000) {
+			if(smom.equals(uuid)) {
+				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE MONTH &kO&r";
+			}
+		}
+		if(!title.equals("")) {
+			title = title + "\n ";
+		}
+		return title;
+	}
+	
+	public String getFullTitles() {
+		long nextD = 0;
+		long nextW = 0;
+		long nextM = 0;
+		ResultSet rs = MainDatabase.getResultSet("SELECT * FROM NextTopStaff WHERE id=0;");
+		try {
+			if(rs.next()) {
+				nextD = rs.getLong("nextDay");
+				nextW = rs.getLong("nextWeek");
+				nextM = rs.getLong("nextMonth");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		String title = "";
+		if(nextD - System.currentTimeMillis() > 7200000) {
+			if(smod.equals(uuid)) {
+				title = "\n&d&kO&r &d&lSTAFF MEMBER OF THE DAY &kO&r";
+			}
+			if(wsmod.equals(uuid)) {
+				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE DAY &kO&r";
+			}
+		}
+		if(nextW - System.currentTimeMillis() > 7200000) {
+			if(smow.equals(uuid)) {
+				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE WEEK &kO&r";
+			}
+			if(wsmow.equals(uuid)) {
+				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE WEEK &kO&r";
+			}
+		}
+		if(nextM - System.currentTimeMillis() > 7200000) {
+			if(smom.equals(uuid)) {
+				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE MONTH &kO&r";
+			}
+			if(wsmom.equals(uuid)) {
+				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE MONTH &kO&r";
+			}
+		}
+		if(!title.equals("")) {
+			title = title + "\n ";
+		}
+		return title;
 	}
 	
 	public String getUuid() {
@@ -450,6 +537,34 @@ public class BStaffMember {
 		return staff;
 	}
 	
+	public static ArrayList<BStaffMember> getAllStaff() {
+		return allStaff;
+	}
+	
+	public static String getSMOfDay() {
+		return smod;
+	}
+	
+	public static String getSMOfWeek() {
+		return smow;
+	}
+	
+	public static String getSMOfMonth() {
+		return smom;
+	}
+	
+	public static String getWSMOfDay() {
+		return wsmod;
+	}
+	
+	public static String getWSMOfWeek() {
+		return wsmow;
+	}
+	
+	public static String getWSMOfMonth() {
+		return wsmom;
+	}
+	
 	public static void loadStaff() {
 		try {
 			allStaff.clear();
@@ -463,6 +578,15 @@ public class BStaffMember {
 				if(m.isStaff()) {
 					staff.add(m);
 				}
+			}
+			rs = MainDatabase.getResultSet("SELECT * FROM NextTopStaff WHERE id=0;");
+			if(rs.next()) {
+				smod = rs.getString("daily");
+				smow = rs.getString("weekly");
+				smom = rs.getString("monthly");
+				wsmod = rs.getString("wDaily");
+				wsmow = rs.getString("wWeekly");
+				wsmom = rs.getString("wMonthly");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

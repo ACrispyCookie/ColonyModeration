@@ -29,6 +29,7 @@ import net.colonymc.moderationsystem.spigot.reports.ArchivedReportsMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportsMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.AddStaffMemberMenu;
+import net.colonymc.moderationsystem.spigot.staffmanager.AllStaffManagerMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.SelectRankMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerPlayerMenu;
@@ -93,13 +94,13 @@ public class BungeecordConnector implements PluginMessageListener {
 		else if(channel.equals("ManagerChannel")) {
 			if(subchannel.equals("ManagerMenu")) {
 				String playerName = in.readUTF();
-				new StaffManagerMenu(Bukkit.getPlayerExact(playerName));
+				new StaffManagerMenu(Bukkit.getPlayerExact(playerName)).openInventory();
 			}
 			else if(subchannel.equals("ManagerMenuPlayer")) {
 				String playerName = in.readUTF();
 				String target = in.readUTF();
 				BStaffMember.loadStaff();
-				new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target));
+				new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), new AllStaffManagerMenu(p)).openInventory();
 			}
 			else if(subchannel.equals("ActionMenu")) {
 				String playerName = in.readUTF();
@@ -107,10 +108,11 @@ public class BungeecordConnector implements PluginMessageListener {
 				String action = in.readUTF();
 				BStaffMember.loadStaff();
 				if(BStaffMember.getByUuid(target) != null) {
-					new SelectRankMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), StaffAction.valueOf(action));
+					new SelectRankMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), StaffAction.valueOf(action), 
+							new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), new StaffManagerMenu(Bukkit.getPlayerExact(playerName)))).openInventory();
 				}
 				else {
-					new AddStaffMemberMenu(Bukkit.getPlayerExact(playerName), target);
+					new AddStaffMemberMenu(Bukkit.getPlayerExact(playerName), target).openInventory();
 				}
 			}
 		}
