@@ -15,7 +15,7 @@ public class Session {
 	}
 	
 	public long getLeave() {
-		return joinTimestamp;
+		return leaveTimestamp;
 	}
 	
 	public int getDuration() {

@@ -2,6 +2,7 @@ package net.colonymc.moderationsystem.spigot.staffmanager;
 
 import java.util.Comparator;
 
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 
 public class BStaffMemberComparator implements Comparator<BStaffMember> {

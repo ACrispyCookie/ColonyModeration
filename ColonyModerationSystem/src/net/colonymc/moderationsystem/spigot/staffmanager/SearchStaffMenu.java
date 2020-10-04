@@ -20,6 +20,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.spigot.Main;
 
 public class SearchStaffMenu implements Listener, InventoryHolder {
@@ -35,7 +36,7 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 	public SearchStaffMenu(Player p, String query) {
 		this.p = p;
 		BStaffMember.loadStaff();
-		for(BStaffMember m : BStaffMember.allStaff) {
+		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(MainDatabase.getName(m.getUuid()).toLowerCase().contains(query.toLowerCase())) {
 				found.add(m);
 			}

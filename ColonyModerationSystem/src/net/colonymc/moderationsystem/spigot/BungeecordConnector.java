@@ -18,6 +18,7 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.bans.ChoosePlayerMenu;
@@ -28,7 +29,6 @@ import net.colonymc.moderationsystem.spigot.reports.ArchivedReportsMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportsMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.AddStaffMemberMenu;
-import net.colonymc.moderationsystem.spigot.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.spigot.staffmanager.SelectRankMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerMenu;
 import net.colonymc.moderationsystem.spigot.staffmanager.StaffManagerPlayerMenu;

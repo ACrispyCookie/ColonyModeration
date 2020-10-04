@@ -43,6 +43,7 @@ import net.colonymc.moderationsystem.bungee.staffmanager.DemoteCommand;
 import net.colonymc.moderationsystem.bungee.staffmanager.PromoteCommand;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffJoinListener;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffManagerCommand;
+import net.colonymc.moderationsystem.bungee.staffmanager.TopStaffAnnouncer;
 import net.colonymc.moderationsystem.bungee.twofa.FreezeSession;
 import net.colonymc.moderationsystem.bungee.twofa.LinkCommand;
 import net.colonymc.moderationsystem.bungee.twofa.LinkedPlayer;
@@ -75,6 +76,7 @@ public class Main extends Plugin {
 	private static LuckPerms luckPerms;
 	private static Main instance;
 	private static FeedbackManager feedback;
+	private static TopStaffAnnouncer topAnnouncer;
 	private static Configuration feedbackConfig;
 	private static JDA jda;
 	boolean started = false;
@@ -95,6 +97,7 @@ public class Main extends Plugin {
 							loadDatabaseRequired();
 							loadLinkedPlayers();
 							setupRevokers();
+							setupTopStaffAnnouncer();
 							setupFeedback();
 							logfile = new File(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt");
 							luckPerms = LuckPermsProvider.get();
@@ -381,6 +384,10 @@ public class Main extends Plugin {
 		}
 	}
 	
+	private void setupTopStaffAnnouncer() {
+		topAnnouncer = new TopStaffAnnouncer();
+	}
+	
 	public static void writeToLog(String s) {
 		try {
 			FileWriter fw = new FileWriter(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt", true);
@@ -398,6 +405,10 @@ public class Main extends Plugin {
 	
 	private static void setInstance(Main instance) {
 		Main.instance = instance;
+	}
+	
+	public static TopStaffAnnouncer getAnnouncer() {
+		return topAnnouncer;
 	}
 	
 	public static FeedbackManager getFeedback() {

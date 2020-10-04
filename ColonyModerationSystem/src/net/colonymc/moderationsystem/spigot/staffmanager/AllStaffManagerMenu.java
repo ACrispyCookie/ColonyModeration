@@ -19,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.spigot.Main;
 
 public class AllStaffManagerMenu implements Listener, InventoryHolder {
@@ -49,12 +50,12 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		inv.setItem(49, new ItemStackBuilder(Material.ARROW).name("&dGo back").build());
 		inv.setItem(50, new ItemStackBuilder(Material.INK_SACK).durability((short) (showingAll ? 10 : 8)).name((showingAll ? "&dHide" : "&dShow") + " retired staff members").build());
-		totalPages = (int) Math.ceil((double) (showingAll ? BStaffMember.allStaff.size() : BStaffMember.staff.size())/45);
+		totalPages = (int) Math.ceil((double) (showingAll ? BStaffMember.getStaff().size() : BStaffMember.getStaff().size())/45);
 		int notShowing = 0;
 		for(int i = 0; i < 45; i++) {
 			int index = i + (page * 45);
-			if(index <= BStaffMember.allStaff.size() - 1) {
-				BStaffMember b = BStaffMember.allStaff.get(index);
+			if(index <= BStaffMember.getStaff().size() - 1) {
+				BStaffMember b = BStaffMember.getStaff().get(index);
 				if(!b.isStaff() && !showingAll) {
 					notShowing++;
 					continue;

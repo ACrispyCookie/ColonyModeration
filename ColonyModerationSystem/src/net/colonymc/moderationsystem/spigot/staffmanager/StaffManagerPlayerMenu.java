@@ -21,6 +21,7 @@ import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.colonyapi.Time;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.Main;
@@ -53,13 +54,15 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore("\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
-			if(b.getRank() != Rank.OWNER) {
-				inv.setItem(14, new SkullItemBuilder().url("http://textures.minecraft.net/texture/7fce66789b77b261e669b239fcd4a6296965585ad01933f830de7a93de4374ce")
-						.name("&dPromote staff member").lore("\n&fClick here to select a rank\n&fand promote this staff member!").build());
-			}
-			if(b.getRank() != Rank.KNIGHT) {
-				inv.setItem(12, new SkullItemBuilder().url("http://textures.minecraft.net/texture/f9710ceae69b72a177e5abbb86c8ada432981ce7fc2d3ed1c651560f7a11e")
-						.name("&dDemote staff member").lore("\n&fClick here to select a rank\n&fand demote this staff member!").build());
+			if(p.hasPermission("colonymc.staffmanager")) {
+				if(b.getRank() != Rank.OWNER) {
+					inv.setItem(14, new SkullItemBuilder().url("http://textures.minecraft.net/texture/7fce66789b77b261e669b239fcd4a6296965585ad01933f830de7a93de4374ce")
+							.name("&dPromote staff member").lore("\n&fClick here to select a rank\n&fand promote this staff member!").build());
+				}
+				if(b.getRank() != Rank.KNIGHT) {
+					inv.setItem(12, new SkullItemBuilder().url("http://textures.minecraft.net/texture/f9710ceae69b72a177e5abbb86c8ada432981ce7fc2d3ed1c651560f7a11e")
+							.name("&dDemote staff member").lore("\n&fClick here to select a rank\n&fand demote this staff member!").build());
+				}
 			}
 			b.loadAll();
 			inv.setItem(20, banItem());
@@ -96,20 +99,28 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 				Player p = m.p;
 				BStaffMember b = m.b;
 				e.setCancelled(true);
-				if(e.getSlot() == 40) {
-					p.closeInventory();
-					new AllStaffManagerMenu(p);
-				}
-				else if(e.getSlot() == 12) {
-					if(b.getRank() != Rank.KNIGHT) {
+				if(p.hasPermission("colonymc.staffmanager")) {
+					if(e.getSlot() == 40) {
 						p.closeInventory();
-						new SelectRankMenu(p, m.b, StaffAction.DEMOTE);
+						new AllStaffManagerMenu(p);
+					}
+					else if(e.getSlot() == 12) {
+						if(b.getRank() != Rank.KNIGHT) {
+							p.closeInventory();
+							new SelectRankMenu(p, m.b, StaffAction.DEMOTE);
+						}
+					}
+					else if(e.getSlot() == 14) {
+						if(b.getRank() != Rank.OWNER) {
+							p.closeInventory();
+							new SelectRankMenu(p, m.b, StaffAction.PROMOTE);
+						}
 					}
 				}
-				else if(e.getSlot() == 14) {
-					if(b.getRank() != Rank.OWNER) {
+				else {
+					if(e.getSlot() == 40) {
 						p.closeInventory();
-						new SelectRankMenu(p, m.b, StaffAction.PROMOTE);
+						new StaffManagerMenu(p);
 					}
 				}
 			}
@@ -123,7 +134,7 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		daily.set(Calendar.SECOND, 0);
 		daily.set(Calendar.MILLISECOND, 0);
 		Calendar weekly = Calendar.getInstance();
-		weekly.set(Calendar.DAY_OF_WEEK_IN_MONTH, 0);
+		weekly.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		weekly.set(Calendar.HOUR_OF_DAY, 0);
 		weekly.set(Calendar.MINUTE, 0);
 		weekly.set(Calendar.SECOND, 0);
@@ -161,13 +172,13 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		yD.set(Calendar.SECOND, 0);
 		yD.set(Calendar.MILLISECOND, 0);
 		Calendar w = Calendar.getInstance();
-		w.set(Calendar.DAY_OF_WEEK_IN_MONTH, 0);
+		w.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		w.set(Calendar.HOUR_OF_DAY, 0);
 		w.set(Calendar.MINUTE, 0);
 		w.set(Calendar.SECOND, 0);
 		w.set(Calendar.MILLISECOND, 0);
 		Calendar lW = Calendar.getInstance();
-		lW.set(Calendar.DAY_OF_WEEK_IN_MONTH, 0);
+		lW.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		lW.set(Calendar.WEEK_OF_MONTH, lW.get(Calendar.WEEK_OF_MONTH) - 1);
 		lW.set(Calendar.HOUR_OF_DAY, 0);
 		lW.set(Calendar.MINUTE, 0);

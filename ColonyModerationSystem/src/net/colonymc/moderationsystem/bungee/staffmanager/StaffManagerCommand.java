@@ -18,7 +18,7 @@ public class StaffManagerCommand extends Command {
 	public void execute(CommandSender sender, String[] args) {
 		if(sender instanceof ProxiedPlayer) {
 			ProxiedPlayer p = (ProxiedPlayer) sender;
-			if(p.hasPermission("colonymc.staffmanager")) {
+			if(p.hasPermission("staff.store")) {
 				if(args.length == 0) {
 					SpigotConnector.openManagerMenu(p.getServer().getInfo(), p.getName());
 				}

@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import net.colonymc.api.itemstacks.ItemStackBuilder;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.BungeecordConnector;
