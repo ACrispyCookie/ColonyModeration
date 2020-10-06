@@ -3,6 +3,7 @@ package net.colonymc.moderationsystem.spigot.reports;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -69,7 +70,7 @@ public class ProcessReport implements Listener, InventoryHolder {
 					}
 				}
 				inv.setItem(13, new SkullItemBuilder()
-						.playerName(r.getReportedName())
+						.playerUuid(UUID.fromString(r.getReportedUuid()))
 						.name("&fReport &d#" + r.getId())
 						.lore("\n&fReported Player: &d" + r.getReportedName() + "\n&fReporter player: &d" + r.getReporterName() + "\n&fReason: &d" + r.getReason() + "\n\n&fStatus: " +
 						((isOnline) ? "&aOnline" : "&cOffline"))

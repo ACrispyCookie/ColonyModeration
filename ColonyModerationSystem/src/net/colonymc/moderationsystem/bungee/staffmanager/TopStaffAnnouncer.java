@@ -43,11 +43,12 @@ public class TopStaffAnnouncer {
 	
 	private void startWeek() {
 		Calendar we = Calendar.getInstance();
+		we.add(Calendar.DATE, 7);
 		we.set(Calendar.HOUR_OF_DAY, 0);
 		we.set(Calendar.MINUTE, 0);
 		we.set(Calendar.SECOND, 0);
 		we.set(Calendar.MILLISECOND, 0);
-		we.add(Calendar.DATE, 7);
+		we.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET nextWeek=" + we.getTimeInMillis() + ";");
 		week = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
 			@Override
@@ -166,8 +167,8 @@ public class TopStaffAnnouncer {
 				wOvr = ovr;
 			}
 		}
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET monhtly='" + staff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonhtly='" + wStaff.getUuid() + "';");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly='" + staff.getUuid() + "';");
+		MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly='" + wStaff.getUuid() + "';");
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET mP=" + tOvr + ";");
 		MainDatabase.sendStatement("UPDATE NextTopStaff SET wmP=" + wOvr + ";");
 	}

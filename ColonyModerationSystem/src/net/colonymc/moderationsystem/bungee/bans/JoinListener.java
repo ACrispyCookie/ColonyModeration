@@ -1,9 +1,18 @@
 package net.colonymc.moderationsystem.bungee.bans;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.Main;
@@ -116,12 +125,12 @@ public class JoinListener implements Listener {
 			try {
 				if(pInfo.next()) {
 					MainDatabase.sendStatement("UPDATE PlayerInfo SET ip='" + c.getAddress().getHostString() + "',lastJoinTime=" + System.currentTimeMillis() + ",name='" + c.getName() 
-					+ "' WHERE uuid='" + c.getUniqueId().toString() + "';");
+					+ "',skin='" + getSkin(c.getUniqueId().toString()) + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
 				}
 				else {
-					MainDatabase.sendStatement("INSERT INTO PlayerInfo (name, uuid, ip, timesBanned, timesMuted, firstJoinTime, lastJoinTime) VALUES "
+					MainDatabase.sendStatement("INSERT INTO PlayerInfo (name, uuid, ip, timesBanned, timesMuted, firstJoinTime, lastJoinTime, skin) VALUES "
 							+ "('" + c.getName() + "', '" + c.getUniqueId().toString() + "', '" + c.getAddress().getHostString() + "', 0, 0, " 
-							+ System.currentTimeMillis() + ", " + System.currentTimeMillis() + ");");
+							+ System.currentTimeMillis() + ", " + System.currentTimeMillis() + ", '" + getSkin(c.getUniqueId().toString()) + "');");
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -262,5 +271,46 @@ public class JoinListener implements Listener {
 		}
 		return durationString;
 	}
+	
+	private String getSkin(String uuid) {
+		String skinURL = getHeadValue(uuid.replaceAll("-", ""));
+		return skinURL.substring(38);
+	}
+	
+	private  String getHeadValue(String uid){
+	    try {
+	        Gson g = new Gson();
+	        String signature = getURLContent("https://sessionserver.mojang.com/session/minecraft/profile/" + uid);
+	        JsonObject obj = g.fromJson(signature, JsonObject.class);
+	        String value = obj.getAsJsonArray("properties").get(0).getAsJsonObject().get("value").getAsString();
+	        String decoded = new String(Base64.getDecoder().decode(value));
+	        obj = g.fromJson(decoded,JsonObject.class);
+	        String skinURL = obj.getAsJsonObject("textures").getAsJsonObject("SKIN").get("url").getAsString();
+	        return skinURL;
+	    } catch (Exception ignored){ }
+	    return null;
+	}
+	
+	private String getURLContent(String urlStr) {
+	        URL url;
+	        BufferedReader in = null;
+	        StringBuilder sb = new StringBuilder();
+	        try{
+	            url = new URL(urlStr);
+	            in = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8) );
+	            String str;
+	            while((str = in.readLine()) != null) {
+	                sb.append( str );
+	            }
+	        } catch (Exception ignored) { }
+	        finally{
+	            try{
+	                if(in!=null) {
+	                    in.close();
+	                }
+	            }catch(IOException ignored) { }
+	        }
+	        return sb.toString();
+	    }
 
 }

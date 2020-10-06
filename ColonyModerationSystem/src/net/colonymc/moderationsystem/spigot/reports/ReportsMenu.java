@@ -3,6 +3,7 @@ package net.colonymc.moderationsystem.spigot.reports;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -57,7 +58,7 @@ public class ReportsMenu implements Listener, InventoryHolder {
 				Report r = Report.reports.get(index);
 				SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 				inv.setItem(i, new SkullItemBuilder()
-						.playerName(r.getReportedName())
+						.playerUuid(UUID.fromString(r.getReportedUuid()))
 						.name("&f[&d#" + r.getId() + "&f] &fReport for &d" + r.getReportedName())
 						.lore("\n&fReported by: &d" + r.getReporterName() + "\n&fReason: &d" + r.getReason() + "\n&fTime Reported: &d" + sdf.format(new Date(r.getTimeReport())) + 
 								"\n\n&dClick to process the report!")

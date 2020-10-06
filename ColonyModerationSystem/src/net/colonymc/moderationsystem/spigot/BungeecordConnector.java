@@ -9,13 +9,12 @@ import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
 import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
@@ -125,21 +124,17 @@ public class BungeecordConnector implements PluginMessageListener {
 				String jsonAnswer = in.readUTF();
 				HashMap<Integer, String> questions = new HashMap<Integer, String>();
 				HashMap<Integer, String[]> options = new HashMap<Integer, String[]>();
-				try {
-					JSONObject jq = (JSONObject) new JSONParser().parse(jsonQuestion);
-					JSONObject ja = (JSONObject) new JSONParser().parse(jsonAnswer);
-					for(int i = 0; i < jq.size(); i++) {
-						JSONArray jr = (JSONArray) ja.get(String.valueOf(i));
-						String[] responses = new String[jr.size()];
-						for(int c = 0; c < jr.size(); c++) {
-							responses[c] = (String) jr.get(c);
-						}
-						
-						questions.put(i, (String) jq.get(String.valueOf(i)));
-						options.put(i, responses);
+				Gson g = new Gson();
+				JsonObject jq = g.fromJson(jsonQuestion, JsonObject.class);
+				JsonObject ja = g.fromJson(jsonAnswer, JsonObject.class);
+				for(int i = 0; i < jq.size(); i++) {
+					JsonArray jr = ja.get(String.valueOf(i)).getAsJsonArray();
+					String[] responses = new String[jr.size()];
+					for(int c = 0; c < jr.size(); c++) {
+						responses[c] = jr.get(c).getAsString();
 					}
-				} catch (ParseException e) {
-					e.printStackTrace();
+					questions.put(i, jq.get(String.valueOf(i)).getAsString());
+					options.put(i, responses);
 				}
 				BFeedback f = new BFeedback(id, title, questions, options, Bukkit.getPlayerExact(playerName));
 				f.ask();
@@ -147,7 +142,6 @@ public class BungeecordConnector implements PluginMessageListener {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static void answerQuestion(Player p, String id, HashMap<Integer, String> answers) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(bytes);
@@ -155,11 +149,11 @@ public class BungeecordConnector implements PluginMessageListener {
 			out.writeUTF("AnswerQuestion");
 			out.writeUTF(p.getUniqueId().toString());
 			out.writeUTF(id);
-			JSONObject j = new JSONObject();
+			JsonObject j = new JsonObject();
 			for(Integer i : answers.keySet()) {
-				j.put(String.valueOf(i), answers.get(i));
+				j.addProperty(String.valueOf(i), answers.get(i));
 			}
-			out.writeUTF(j.toJSONString());
+			out.writeUTF(j.getAsString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

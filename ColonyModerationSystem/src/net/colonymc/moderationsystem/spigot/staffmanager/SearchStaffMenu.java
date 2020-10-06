@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -72,7 +73,7 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 				String joinTimestamp = sdf.format(new Date(b.getJoin()));
 				String leaveTimestamp = sdf.format(new Date(b.getLeave()));
 				String rank = b.getRank().getName();
-				ItemStack item = new SkullItemBuilder().playerName(name).name((b.isStaff() ? "&d" : "&c") + name)
+				ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name((b.isStaff() ? "&d" : "&c") + name)
 						.lore("\n&5» &fRank: &d" + rank + 
 								"\n&5» &fJoined at: &d" + joinTimestamp + 
 								"\n&5» &fLeft at: &d" + leaveTimestamp + 

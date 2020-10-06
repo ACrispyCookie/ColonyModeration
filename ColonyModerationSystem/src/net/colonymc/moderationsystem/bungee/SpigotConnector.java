@@ -1,13 +1,11 @@
 package net.colonymc.moderationsystem.bungee;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.bans.MassPunishment;
@@ -162,37 +160,33 @@ public class SpigotConnector implements Listener {
 				String playerUuid = in.readUTF();
 				String id = in.readUTF();
 				String jsonString;
-				try {
-					JSONObject answer = (JSONObject) new JSONParser().parse(in.readUTF());
-					jsonString = answer.toJSONString();
-					Feedback f = Main.getFeedback().getById(id);
-					f.answer(playerUuid, jsonString);
-				} catch (ParseException e1) {
-					e1.printStackTrace();
-				}
+				Gson g = new Gson();
+				JsonObject answer = g.fromJson(in.readUTF(), JsonObject.class);
+				jsonString = answer.getAsString();
+				Feedback f = Main.getFeedback().getById(id);
+				f.answer(playerUuid, jsonString);
 			}
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static void openSurveyMenu(ServerInfo s, String playerName, Feedback f) {
 	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
 	    out.writeUTF("AskQuestion");
 	    out.writeUTF(playerName);
 	    out.writeUTF(f.getId());
 	    out.writeUTF(f.getTitle());
-	    JSONObject questions = new JSONObject();
-	    JSONObject answers = new JSONObject();
+	    JsonObject questions = new JsonObject();
+	    JsonObject answers = new JsonObject();
 	    for(Integer ss : f.getQuestions().keySet()) {
-		    questions.put(String.valueOf(ss), f.getQuestions().get(ss));
-		    JSONArray a = new JSONArray();
+		    questions.addProperty(String.valueOf(ss), f.getQuestions().get(ss));
+		    JsonArray a = new JsonArray();
 		    for(String answer : f.getOptions().get(ss)) {
 			    a.add(answer);
 		    }
-		    answers.put(String.valueOf(ss), a);
+		    answers.add(String.valueOf(ss), a);
 	    }
-    	out.writeUTF(questions.toJSONString());
-    	out.writeUTF(answers.toJSONString());
+    	out.writeUTF(questions.getAsString());
+    	out.writeUTF(answers.getAsString());
 	    s.sendData("FeedbackChannel", out.toByteArray());
 	}
 	

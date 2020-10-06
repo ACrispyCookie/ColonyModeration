@@ -134,7 +134,7 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 			if(allPlayers.size() > index) {
 				if(selectMultiple) {
 					inv.setItem(i, new SkullItemBuilder()
-							.playerName(allPlayers.get(index))
+							.playerUuid(UUID.fromString(MainDatabase.getUuid(allPlayers.get(index))))
 							.name("&d" + allPlayers.get(index))
 							.lore("\n&fPlayer's UUID: &d" + MainDatabase.getUuid(allPlayers.get(index)) + 
 									"\n&fPlayer's IP: &d" + MainDatabase.getLastIp(allPlayers.get(index)) + "\n&fTimes Banned: &d" + MainDatabase.getTimesBanned(allPlayers.get(index)) + 
@@ -143,7 +143,7 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 				}
 				else {
 					inv.setItem(i, new SkullItemBuilder()
-							.playerName(allPlayers.get(index))
+							.playerUuid(UUID.fromString(MainDatabase.getUuid(allPlayers.get(index))))
 							.name("&d" + allPlayers.get(index))
 							.lore("\n&fPlayer's UUID: &d" + MainDatabase.getUuid(allPlayers.get(index)) + 
 									"\n&fPlayer's IP: &d" + MainDatabase.getLastIp(allPlayers.get(index)) + "\n&fTimes Banned: &d" + MainDatabase.getTimesBanned(allPlayers.get(index)) + 

@@ -2,6 +2,7 @@ package net.colonymc.moderationsystem.spigot.staffmanager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -199,7 +200,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(tD))
+					.playerUuid(UUID.fromString(tD))
 					.name("&dStaff member of the day")
 					.lore("\n&fThe new staff member of"
 							+ "\n&fthe &dday &fis..."
@@ -230,7 +231,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(tW))
+					.playerUuid(UUID.fromString(tW))
 					.name("&dStaff member of the week")
 					.lore("\n&fThe new staff member of"
 							+ "\n&fthe &dweek &fis..."
@@ -261,7 +262,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(tM))
+					.playerUuid(UUID.fromString(tM))
 					.name("&dStaff member of the month")
 					.lore("\n&fThe new staff member of"
 							+ "\n&fthe &dmonth &fis..."
@@ -292,7 +293,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(wD))
+					.playerUuid(UUID.fromString(wD))
 					.name("&cWorst staff member of the day")
 					.lore("\n&fThe new &cworst &fstaff member of"
 							+ "\n&fthe &dday &fis..."
@@ -323,7 +324,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(wW))
+					.playerUuid(UUID.fromString(wW))
 					.name("&cWorst staff member of the week")
 					.lore("\n&fThe new &cworst &fstaff member of"
 							+ "\n&fthe &dweek &fis..."
@@ -354,7 +355,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			return new SkullItemBuilder()
-					.playerName(MainDatabase.getName(wM))
+					.playerUuid(UUID.fromString(wM))
 					.name("&cWorst staff member of the month")
 					.lore("\n&fThe new &cworst &fstaff member of"
 							+ "\n&fthe &dmonth &fis..."

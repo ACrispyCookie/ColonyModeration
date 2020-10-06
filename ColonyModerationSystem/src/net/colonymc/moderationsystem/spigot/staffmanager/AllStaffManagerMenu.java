@@ -3,6 +3,7 @@ package net.colonymc.moderationsystem.spigot.staffmanager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -64,7 +65,7 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 				String joinTimestamp = sdf.format(new Date(b.getJoin()));
 				String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 				String rank = b.getRank().getName();
-				ItemStack item = new SkullItemBuilder().playerName(name).name((b.isStaff() ? "&d" : "&c") + name)
+				ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name((b.isStaff() ? "&d" : "&c") + name)
 						.lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles()) +
 								"\n&5» &fRank: &d" + rank + 
 								"\n&5» &fJoined at: &d" + joinTimestamp + 

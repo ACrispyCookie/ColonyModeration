@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -52,7 +53,7 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String joinTimestamp = sdf.format(new Date(b.getJoin()));
 		String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 		String rank = b.getRank().getName();
-		ItemStack item = new SkullItemBuilder().playerName(name).name("&d" + name).lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles())
+		ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name("&d" + name).lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles())
 				+ "\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
