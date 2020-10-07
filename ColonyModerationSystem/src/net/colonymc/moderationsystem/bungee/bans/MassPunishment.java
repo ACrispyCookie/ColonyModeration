@@ -4,9 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.Time;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -75,7 +75,7 @@ public class MassPunishment {
 				MainDatabase.sendStatement("UPDATE PlayerInfo SET timesMuted=" + (timesMuted.get(i) + 1) + " WHERE uuid='" + targetUuid.get(i) + "';");
 				if(ProxyServer.getInstance().getPlayer(target[i]) != null) {
 					ProxyServer.getInstance().getPlayer(target[i]).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
-							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + getDurationString(duration.get(i)) + "\n&r        &fMuted by &5» &d" + staff.getName() +
+							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + Time.formatted(duration.get(i)) + "\n&r        &fMuted by &5» &d" + staff.getName() +
 							"\n \n&f&m-------------------------------------")));
 				}
 				new Mute(target[i], targetUuid.get(i), staff.getName(), ((ProxiedPlayer) staff).getUniqueId().toString(), reason, id.get(i),
@@ -253,51 +253,15 @@ public class MassPunishment {
 		return 0;
 	}
 	
-	private String getDurationString(long duration) {
-		String durationString = null;
-		if(duration == -1) {
-			durationString = "Never";
-			return durationString;
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) > 0) {
-			durationString = String.format("%d days, %d hours, %d minutes, %d seconds",
-					TimeUnit.MILLISECONDS.toDays(duration),
-					TimeUnit.MILLISECONDS.toHours(duration) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration)),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-			
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) == 0) {
-			durationString = String.format("%d hours, %d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toHours(duration),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toHours(duration) == 0) {
-			durationString = String.format("%d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toMinutes(duration),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toMinutes(duration) == 0) {
-			durationString = String.format("%d seconds", 
-					TimeUnit.MILLISECONDS.toSeconds(duration)
-					);
-		}
-		return durationString;
-	}
-	
 	private String getTextReason(int i) {
 		String finalreason;
 		if(duration.get(i) == -1) {
 			finalreason = "§5§lYour account has been \n§5§lpermanently suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + getDurationString(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		else {
 			finalreason = "§5§lYour account has been \n§5§ltemporarily suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + getDurationString(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		return finalreason;
 	}

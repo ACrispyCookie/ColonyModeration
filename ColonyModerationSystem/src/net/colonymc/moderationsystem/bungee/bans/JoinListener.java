@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.Time;
 import net.colonymc.moderationsystem.bungee.Main;
 import net.colonymc.moderationsystem.bungee.reports.Report;
 import net.colonymc.moderationsystem.bungee.twofa.FreezeSession;
@@ -223,52 +224,16 @@ public class JoinListener implements Listener {
 	
 	private TextComponent createReasonComponent(String staff, long duration, String reason, String ID) {
 		String finalText = "§5§lYour account has been \n§5§ltemporarily suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + getDurationString(duration) + "\n§fBan ID §5» §d#" + ID + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration) + "\n§fBan ID §5» §d#" + ID + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return new TextComponent(finalText);
 	}
 	
 	private TextComponent createBanEvasionComponent(String bannedName, String reason, String staff, long duration) {
 		String finalText = "§5§lAnother account with the same IP\n§5§lhas been temporarily suspended from our network!\n§5\n§fAccount's name §5» §d" + 
 	bannedName + "\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + getDurationString(duration) 
+					+ " §d" + Time.formatted(duration) 
 					+ "\n§fLogin from your other\n§faccount in order to get your §dBan ID\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return new TextComponent(finalText);
-	}
-	
-	private String getDurationString(long duration) {
-		String durationString = null;
-		if(duration == -1) {
-			return "Never";
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) > 0) {
-			durationString = String.format("%d days, %d hours, %d minutes, %d seconds",
-					TimeUnit.MILLISECONDS.toDays(duration),
-					TimeUnit.MILLISECONDS.toHours(duration) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration)),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-			
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) == 0) {
-			durationString = String.format("%d hours, %d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toHours(duration),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toHours(duration) == 0) {
-			durationString = String.format("%d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toMinutes(duration),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toMinutes(duration) == 0) {
-			durationString = String.format("%d seconds", 
-					TimeUnit.MILLISECONDS.toSeconds(duration)
-					);
-			
-		}
-		return durationString;
 	}
 	
 	private String getSkin(String uuid) {

@@ -1,7 +1,6 @@
 package net.colonymc.moderationsystem.spigot.bans;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,6 +19,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.Time;
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
 import net.colonymc.moderationsystem.spigot.BungeecordConnector;
 import net.colonymc.moderationsystem.spigot.Main;
@@ -110,7 +110,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 		inv.setItem(24, new ItemStackBuilder(Material.STAINED_GLASS_PANE).name("&c-1 month").durability((short) 14).build());
 		inv.setItem(25, new ItemStackBuilder(Material.STAINED_GLASS_PANE).name("&c-1 year").durability((short) 14).build());
 		inv.setItem(13, new ItemStackBuilder(Material.WATCH)
-				.name("&fDuration: &d" + getDurationString((long) seconds * 1000))
+				.name("&fDuration: &d" + Time.formatted((long) seconds * 1000))
 				.lore("\n&fClick the buttons above and below to\n&fchange the duration of the punishment!\n\n&dClick here &fto confirm the duration and execute\n&fthe punishment!")
 				.build());
 		if(targetName == null) {
@@ -119,7 +119,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 		else {
 			inv.setItem(12, new ItemStackBuilder(Material.NETHER_STAR)
 					.name("&dRecommended duration for each player")
-					.lore("\n&fClick this if you want the duration\n&ffor the punishment to be calculated automatically!\n \n&fRecommended Duration: &d" + getDurationString(getRecommendedDuration()))
+					.lore("\n&fClick this if you want the duration\n&ffor the punishment to be calculated automatically!\n \n&fRecommended Duration: &d" + Time.formatted(getRecommendedDuration()))
 					.build());
 		}
 	}
@@ -314,7 +314,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 					}
 				}
 				menu.inv.setItem(13, new ItemStackBuilder(Material.WATCH)
-						.name("&fDuration: &d" + getDurationString((long) menu.seconds * 1000))
+						.name("&fDuration: &d" + Time.formatted((long) menu.seconds * 1000))
 						.lore("\n&fClick the buttons above and below to\n&fchange the duration of the punishment!\n\n&dClick here &fto confirm the duration and execute\n&fthe punishment!")
 						.build());
 			}
@@ -364,41 +364,5 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 				menu.checkIfExists.cancel();
 			}
 		}
-	}
-	
-	private String getDurationString(long duration) {
-		String durationString = null;
-		if(duration == -1) {
-			durationString = "Never";
-			return durationString;
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) > 0) {
-			durationString = String.format("%d days, %d hours, %d minutes, %d seconds",
-					TimeUnit.MILLISECONDS.toDays(duration),
-					TimeUnit.MILLISECONDS.toHours(duration) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration)),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-			
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) == 0) {
-			durationString = String.format("%d hours, %d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toHours(duration),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toHours(duration) == 0) {
-			durationString = String.format("%d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toMinutes(duration),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toMinutes(duration) == 0) {
-			durationString = String.format("%d seconds", 
-					TimeUnit.MILLISECONDS.toSeconds(duration)
-					);
-		}
-		return durationString;
 	}
 }

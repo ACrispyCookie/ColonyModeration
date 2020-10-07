@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.Time;
 import net.colonymc.moderationsystem.bungee.Main;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -145,44 +146,11 @@ public class Mute implements Listener {
 						|| e.getMessage().startsWith("/pm ") || e.getMessage().startsWith("/r ") || e.getMessage().startsWith("/reply ") || e.getMessage().startsWith("/tell ") || e.getMessage().startsWith("/whisper ") || e.getMessage().startsWith("/w ")) {
 					e.setCancelled(true);
 					p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
-							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + m.getReason() + "\n&r        &fUnmute in &5» &d" + getDurationString(m.getMutedUntil() - System.currentTimeMillis()) + "\n&r        &fMuted by &5» &d" + m.getStaff() +
+							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + m.getReason() + "\n&r        &fUnmute in &5» &d" + Time.formatted(m.getMutedUntil() - System.currentTimeMillis()) + "\n&r        &fMuted by &5» &d" + m.getStaff() +
 							"\n&r \n&f&m-------------------------------------")));
 				}
 			}
 		}
-	}
-	
-	private String getDurationString(long duration) {
-		String durationString = null;
-		if(TimeUnit.MILLISECONDS.toDays(duration) > 0) {
-			durationString = String.format("%d days, %d hours, %d minutes, %d seconds",
-					TimeUnit.MILLISECONDS.toDays(duration),
-					TimeUnit.MILLISECONDS.toHours(duration) - TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration)),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-			
-		}
-		if(TimeUnit.MILLISECONDS.toDays(duration) == 0) {
-			durationString = String.format("%d hours, %d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toHours(duration),
-					TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toHours(duration) == 0) {
-			durationString = String.format("%d minutes, %d seconds", 
-					TimeUnit.MILLISECONDS.toMinutes(duration),
-					TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-					);
-		}
-		if(TimeUnit.MILLISECONDS.toMinutes(duration) == 0) {
-			durationString = String.format("%d seconds", 
-					TimeUnit.MILLISECONDS.toSeconds(duration)
-					);
-			
-		}
-		return durationString;
 	}
 
 }
