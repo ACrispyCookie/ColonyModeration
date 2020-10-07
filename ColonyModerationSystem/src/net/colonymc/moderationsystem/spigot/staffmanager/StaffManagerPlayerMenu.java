@@ -56,19 +56,17 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 		String rank = b.getRank().getName();
 		ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name("&d" + name).lore(
-				"\n&5» &d&nInformation:" + 
+				"\n&d&nInformation:" + 
+				"\n &5» &fRank: &d" + rank + 
+				"\n &5» &fJoined at: &d" + joinTimestamp + 
+				"\n &5» &fLeft at: &d" + leaveTimestamp + 
 				"\n " +
-				"\n&5» &fRank: &d" + rank + 
-				"\n&5» &fJoined at: &d" + joinTimestamp + 
-				"\n&5» &fLeft at: &d" + leaveTimestamp + 
+				"\n&d&nRatings:" + 
+				"\n &5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
+				"\n &5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
+				"\n &5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
 				"\n " +
-				"\n&5» &d&nRatings:" + 
-				"\n " +
-				"\n&5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
-				"\n&5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
-				"\n&5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
-				"\n " +
-				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&5» &d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
+				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
 				(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
 						+ "\n&cbecause they no longer"
 						+ "\n&chave their discord linked!"))
@@ -168,16 +166,23 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		monthly.set(Calendar.SECOND, 0);
 		monthly.set(Calendar.MILLISECOND, 0);
 		return new ItemStackBuilder(Material.BOOK).name("&dPunishments executed")
-				.lore("\n&fIngame punishments:"
-						+ "\n &5- &d" + b.getPunishments().size() + "/" + b.getPunishmentsAfter(monthly.getTimeInMillis()).size() + "/" + b.getPunishmentsAfter(weekly.getTimeInMillis()).size() + "/" + b.getPunishmentsAfter(daily.getTimeInMillis()).size()
-						+ "\n &7(Total/Monthly/Weekly/Daily)"
-						+ "\n \n&fDiscord punishments:"
-						+ "\n &5- &d" + b.getDiscordPunishments().size() + "/" + b.getDiscordPunishmentsAfter(monthly.getTimeInMillis()).size() + "/" 
-							+ b.getDiscordPunishmentsAfter(weekly.getTimeInMillis()).size() + "/" + b.getDiscordPunishmentsAfter(daily.getTimeInMillis()).size() 
-						+ "\n &7(Total/Monthly/Weekly/Daily)"
-						+ "\n \n&fIngame reports closed:"
-						+ "\n &5- &d" + b.getReports().size() + "/" + b.getReportsAfter(monthly.getTimeInMillis()).size() + "/" + b.getReportsAfter(weekly.getTimeInMillis()).size() + "/" + b.getReportsAfter(daily.getTimeInMillis()).size()
-						+ "\n &7(Total/Monthly/Weekly/Daily)")
+				.lore("\n&d&nIngame punishments:"
+						+ "\n &5» &fDaily: &d" + b.getPunishments().size() 
+						+ "\n &5» &fWeekly: &d" + b.getPunishmentsAfter(monthly.getTimeInMillis()).size() 
+						+ "\n &5» &fMonthly: &d" + b.getPunishmentsAfter(weekly.getTimeInMillis()).size() 
+						+ "\n &5» &fTotal: &d" + b.getPunishmentsAfter(daily.getTimeInMillis()).size()
+						+ "\n "
+						+ "\n&d&nDiscord punishments:"
+						+ "\n &5» &fDaily: &d" + b.getDiscordPunishments().size() 
+						+ "\n &5» &fWeekly: &d" + b.getDiscordPunishmentsAfter(monthly.getTimeInMillis()).size() 
+						+ "\n &5» &fMonthly: &d" + b.getDiscordPunishmentsAfter(weekly.getTimeInMillis()).size() 
+						+ "\n &5» &fTotal: &d" + b.getDiscordPunishmentsAfter(daily.getTimeInMillis()).size() 
+						+ "\n "
+						+ "\n&d&nIngame reports closed:"
+						+ "\n &5» &fDaily: &d" + b.getReports().size() 
+						+ "\n &5» &fWeekly: &d" + b.getReportsAfter(monthly.getTimeInMillis()).size() 
+						+ "\n &5» &fMonthly: &d" + b.getReportsAfter(weekly.getTimeInMillis()).size() 
+						+ "\n &5» &fTotal: &d" + b.getReportsAfter(daily.getTimeInMillis()).size())
 				.build();
 	}
 
@@ -231,20 +236,16 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		double mlm = (((double) month/lastMonth) - 1) * 100;
 		DecimalFormat dd = new DecimalFormat("#.##");
 		return new ItemStackBuilder(Material.WATCH).name("&dPlaytime")
-				.lore("\n&fDaily playtime:" + 
-						"\n &5- &d" + Time.formatted(day) + 
-						"\n &7(Yesterday: &d" + Time.formatted(yesterday) + "&7) " 
+				.lore("\n&fDaily playtime: &d" + Time.formatted(day) + 
+						"\n&7(Yesterday: &d" + Time.formatted(yesterday) + "&7) " 
 						+ (day != 0 && yesterday != 0 ? (day > yesterday ? "&a(+" + dd.format(dy) + "%)" : (day == yesterday ? "&e(+0%)" : "&c(" + dd.format(dy) + "%)")) : "") +
-						"\n \n&fWeekly playtime:" + 
-						"\n &5- &d" + Time.formatted(week) + 
-						"\n &7(Last week: &d" + Time.formatted(lastWeek) + "&7) " 
+						"\n \n&fWeekly playtime: &d" + Time.formatted(week) + 
+						"\n&7(Last week: &d" + Time.formatted(lastWeek) + "&7) " 
 						+ (week != 0 && lastWeek != 0 ? (week > lastWeek ? "&a(+" + dd.format(wlw) + "%)" : (week == lastWeek ? "&e(+0%)" : "&c(" + dd.format(wlw) + "%)")) : "") +
-						"\n \n&fMonthly playtime:" + 
-						"\n &5- &d" + Time.formatted(month) + 
-						"\n &7(Last month: &d" + Time.formatted(lastMonth) + "&7) " 
+						"\n \n&fMonthly playtime: &d" + Time.formatted(month) + 
+						"\n&7(Last month: &d" + Time.formatted(lastMonth) + "&7) " 
 						+ (month != 0 && lastMonth != 0 ? (month > lastMonth ? "&a(+" + dd.format(mlm) + "%)" : (month == lastMonth ? "&e(+0%)" : "&c(" + dd.format(mlm) + "%)")) : "") +
-						"\n \n&fTotal playtime:" + 
-						"\n &5- &d" + Time.formatted(total))
+						"\n \n&fTotal playtime: &d" + Time.formatted(total))
 				.build();
 	}
 	
@@ -254,13 +255,13 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String loreDem = b.getDemotions().size() > 0 ? "\n&d&nDemotions:" : "";
 		for(Promotion m : b.getPromotions()) {
 			loreProm = loreProm + 
-					"\n &5- &fPromotion at &d" + sdf.format(new Date(m.getTimestamp())) +
+					"\n &5» &fPromotion at &d" + sdf.format(new Date(m.getTimestamp())) +
 					"\n    &fRank after: &" + m.getRankAfter().getChatColor() + m.getRankAfter().getName() + 
 					"\n    &fAction by: &d" + MainDatabase.getName(m.getByUuid()) + "\n";
 		}
 		for(Promotion m : b.getDemotions()) {
 			loreDem = loreDem + 
-					"\n &5- &fDemotion at &d" + sdf.format(new Date(m.getTimestamp())) +
+					"\n &5» &fDemotion at &d" + sdf.format(new Date(m.getTimestamp())) +
 					"\n    &fRank after: &" + m.getRankAfter().getChatColor() + m.getRankAfter().getName() + 
 					"\n    &fAction by: &d" + MainDatabase.getName(m.getByUuid()) + "\n";
 		}
@@ -273,22 +274,22 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		DecimalFormat d = new DecimalFormat("#.##");
 		return new ItemStackBuilder(Material.PAPER)
 				.name("&dPlayer feedback")
-				.lore("\n&fToday:"
+				.lore("\n&d&nToday:"
 						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
 						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
 						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
 						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
-					 + "\n \n&fThis week:"
+					 + "\n \n&d&nThis week:"
 						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
 						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
 						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
 						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
-					+ "\n \n&fThis month:"
+					+ "\n \n&d&nThis month:"
 						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
 						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
 						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
 						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
-					+ "\n \n&fTotal:"
+					+ "\n \n&d&nTotal:"
 						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FAIR)) + "/5)"
 						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
 						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
