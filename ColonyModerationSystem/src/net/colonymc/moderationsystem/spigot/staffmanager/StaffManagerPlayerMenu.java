@@ -26,6 +26,8 @@ import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.Main;
+import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback;
+import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback.FEEDBACK_TYPE;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.Promotion;
 
 public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
@@ -53,8 +55,25 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		String joinTimestamp = sdf.format(new Date(b.getJoin()));
 		String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 		String rank = b.getRank().getName();
-		ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name("&d" + name).lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles())
-				+ "\n&5» &fRank: &d" + rank + "\n&5» &fJoined at: &d" + joinTimestamp + "\n&5» &fLeft at: &d" + leaveTimestamp).build();
+		ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name("&d" + name).lore(
+				"\n&5» &d&nInformation:" + 
+				"\n " +
+				"\n&5» &fRank: &d" + rank + 
+				"\n&5» &fJoined at: &d" + joinTimestamp + 
+				"\n&5» &fLeft at: &d" + leaveTimestamp + 
+				"\n " +
+				"\n&5» &d&nRatings:" + 
+				"\n " +
+				"\n&5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
+				"\n&5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
+				"\n&5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
+				"\n " +
+				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&5» &d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
+				(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
+						+ "\n&cbecause they no longer"
+						+ "\n&chave their discord linked!"))
+				+ (b.isStaff() ? "" : "\n "
+						+ "\n&cThis player is no longer a staff member!")).build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
 			if(p.hasPermission("colonymc.staffmanager")) {
@@ -255,25 +274,25 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		return new ItemStackBuilder(Material.PAPER)
 				.name("&dPlayer feedback")
 				.lore("\n&fToday:"
-						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
-						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
-						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
-						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
+						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getDailyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
 					 + "\n \n&fThis week:"
-						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
-						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
-						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
-						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
+						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getWeeklyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
 					+ "\n \n&fThis month:"
-						+ "\n &5» &fFair: " + getStars(b.getDailyF().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
-						+ "\n &5» &fHelpful: " + getStars(b.getDailyF().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
-						+ "\n &5» &fFriendly: " + getStars(b.getDailyF().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
-						+ "\n &5» &fActive: " + getStars(b.getDailyF().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)"
+						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FAIR)) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
+						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getMonthlyF(), FEEDBACK_TYPE.ACTIVE)) + "/5)"
 					+ "\n \n&fTotal:"
-						+ "\n &5» &fFair: " + getStars(b.getFeedback().get("fair").intValue()) + " &7(" + d.format(b.getDailyF().get("fair")) + "/5)"
-						+ "\n &5» &fHelpful: " + getStars(b.getFeedback().get("helpful").intValue()) + " &7(" + d.format(b.getDailyF().get("helpful")) + "/5)"
-						+ "\n &5» &fFriendly: " + getStars(b.getFeedback().get("friendly").intValue()) + " &7(" + d.format(b.getDailyF().get("friendly")) + "/5)"
-						+ "\n &5» &fActive: " + getStars(b.getFeedback().get("active").intValue()) + " &7(" + d.format(b.getDailyF().get("active")) + "/5)")
+						+ "\n &5» &fFair: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FAIR)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FAIR)) + "/5)"
+						+ "\n &5» &fHelpful: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.HELPFUL)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.HELPFUL)) + "/5)"
+						+ "\n &5» &fFriendly: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FRIENDLY)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.FRIENDLY)) + "/5)"
+						+ "\n &5» &fActive: " + getStars((int) Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.ACTIVE)) + " &7(" + d.format(Feedback.getFromArray(b.getFeedback(), FEEDBACK_TYPE.ACTIVE)) + "/5)")
 				.build();
 	}
 	

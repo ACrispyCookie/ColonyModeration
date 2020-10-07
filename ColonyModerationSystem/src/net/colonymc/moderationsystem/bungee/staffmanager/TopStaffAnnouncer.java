@@ -35,7 +35,7 @@ public class TopStaffAnnouncer {
 		day = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
 			@Override
 			public void run() {
-				decideDay();
+				decideDay(da.getTimeInMillis());
 				startDay();
 			}
 		}, (da.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
@@ -53,7 +53,7 @@ public class TopStaffAnnouncer {
 		week = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
 			@Override
 			public void run() {
-				decideWeek();
+				decideWeek(we.getTimeInMillis());
 				startWeek();
 			}
 		}, (we.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
@@ -71,24 +71,23 @@ public class TopStaffAnnouncer {
 		month = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
 			@Override
 			public void run() {
-				decideMonth();
+				decideMonth(mo.getTimeInMillis());
 				startMonth();
 			}
 		}, (mo.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
 	}
 	
-	private void decideDay() {
+	private void decideDay(long day) {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
 		int tOvr = 0;
-		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getDailyOvr();
-			if(staff == null || ovr > staff.getDailyOvr()) {
+			int ovr = m.calculateBetween(day, System.currentTimeMillis());
+			if(staff == null || ovr > staff.calculateBetween(day, System.currentTimeMillis())) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -97,30 +96,32 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getDailyOvr();
-			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
+			int ovr = m.calculateBetween(day, System.currentTimeMillis());
+			if(wStaff == null || ovr < wStaff.calculateBetween(day, System.currentTimeMillis())) {
 				wStaff = m;
-				wOvr = ovr;
 			}
 		}
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET daily='" + staff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily='" + wStaff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET dP=" + tOvr + ";");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wdP=" + wOvr + ";");
+		if(tOvr > 0) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET daily='" + staff.getUuid() + "';");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily='" + wStaff.getUuid() + "';");
+		}
+		else {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET daily=NULL;");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily=NULL;");
+		}
 	}
 	
-	private void decideWeek() {
+	private void decideWeek(long week) {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
 		int tOvr = 0;
-		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getDailyOvr();
-			if(staff == null || ovr > staff.getDailyOvr()) {
+			int ovr = m.calculateBetween(week, System.currentTimeMillis());
+			if(staff == null || ovr > staff.calculateBetween(week, System.currentTimeMillis())) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -129,30 +130,32 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getDailyOvr();
-			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
+			int ovr = m.calculateBetween(week, System.currentTimeMillis());
+			if(wStaff == null || ovr < wStaff.calculateBetween(week, System.currentTimeMillis())) {
 				wStaff = m;
-				wOvr = ovr;
 			}
 		}
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly='" + staff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly='" + wStaff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wP=" + tOvr + ";");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wwP=" + wOvr + ";");
+		if(tOvr > 0) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly='" + staff.getUuid() + "';");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly='" + wStaff.getUuid() + "';");
+		}
+		else {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly=NULL;");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly=NULL;");
+		}
 	}
 	
-	private void decideMonth() {
+	private void decideMonth(long month) {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
 		int tOvr = 0;
-		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getMonthlyOvr();
-			if(staff == null || ovr > staff.getMonthlyOvr()) {
+			int ovr = m.calculateBetween(month, System.currentTimeMillis());
+			if(staff == null || ovr > staff.calculateBetween(month, System.currentTimeMillis())) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -161,16 +164,19 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.getDailyOvr();
-			if(wStaff == null || ovr < wStaff.getDailyOvr()) {
+			int ovr = m.calculateBetween(month, System.currentTimeMillis());
+			if(wStaff == null || ovr < wStaff.calculateBetween(month, System.currentTimeMillis())) {
 				wStaff = m;
-				wOvr = ovr;
 			}
 		}
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly='" + staff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly='" + wStaff.getUuid() + "';");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET mP=" + tOvr + ";");
-		MainDatabase.sendStatement("UPDATE NextTopStaff SET wmP=" + wOvr + ";");
+		if(tOvr > 0) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly='" + staff.getUuid() + "';");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly='" + wStaff.getUuid() + "';");
+		}
+		else {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly=NULL;");
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly=NULL;");
+		}
 	}
 
 }

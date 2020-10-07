@@ -7,7 +7,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -273,8 +272,7 @@ public class JoinListener implements Listener {
 	}
 	
 	private String getSkin(String uuid) {
-		String skinURL = getHeadValue(uuid.replaceAll("-", ""));
-		return skinURL.substring(38);
+		return getHeadValue(uuid.replaceAll("-", ""));
 	}
 	
 	private  String getHeadValue(String uid){
@@ -283,10 +281,7 @@ public class JoinListener implements Listener {
 	        String signature = getURLContent("https://sessionserver.mojang.com/session/minecraft/profile/" + uid);
 	        JsonObject obj = g.fromJson(signature, JsonObject.class);
 	        String value = obj.getAsJsonArray("properties").get(0).getAsJsonObject().get("value").getAsString();
-	        String decoded = new String(Base64.getDecoder().decode(value));
-	        obj = g.fromJson(decoded,JsonObject.class);
-	        String skinURL = obj.getAsJsonObject("textures").getAsJsonObject("SKIN").get("url").getAsString();
-	        return skinURL;
+	        return value;
 	    } catch (Exception ignored){ }
 	    return null;
 	}

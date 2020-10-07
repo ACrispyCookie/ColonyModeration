@@ -66,12 +66,21 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 				String leaveTimestamp = b.getLeave() == 0 ? "&dNever" : sdf.format(new Date(b.getLeave()));
 				String rank = b.getRank().getName();
 				ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name((b.isStaff() ? "&d" : "&c") + name)
-						.lore((p.hasPermission("colonymc.staffmanager") ? b.getFullTitles() : b.getTitles()) +
+						.lore(
+								"\n&5» &d&nInformation:" + 
+								"\n " +
 								"\n&5» &fRank: &d" + rank + 
 								"\n&5» &fJoined at: &d" + joinTimestamp + 
 								"\n&5» &fLeft at: &d" + leaveTimestamp + 
-								"\n "
-								+ "\n " + (b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
+								"\n " +
+								"\n&5» &d&nRatings:" + 
+								"\n " +
+								"\n&5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
+								"\n&5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
+								"\n&5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
+								"\n " +
+								(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&5» &d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
+								(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
 										+ "\n&cbecause they no longer"
 										+ "\n&chave their discord linked!"))
 								+ (b.isStaff() ? "" : "\n "

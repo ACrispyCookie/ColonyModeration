@@ -29,18 +29,6 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 
 	Inventory inv;
 	Player p;
-	String tDor;
-	String tWor;
-	String tMor;
-	String wDor;
-	String wWor;
-	String wMor;
-	String tD;
-	String tW;
-	String tM;
-	String wD;
-	String wW;
-	String wM;
 	long nextD;
 	long nextW;
 	long nextM;
@@ -52,6 +40,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, p.hasPermission("colonymc.staffmanager") ? 54 : 36, "Best" + (p.hasPermission("colonymc.staffmanager") ? "/Worst" : "") + " staff members");
 		setup();
+		BStaffMember.loadStaff();
 		update = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -121,33 +110,33 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 						new StaffManagerMenu(p).openInventory();
 					}
 					else if(e.getSlot() == 11) {
-						if(menu.nextD - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tD), menu).openInventory();
+						if(menu.nextD - System.currentTimeMillis() > 7200000 & BStaffMember.getSMOfDay() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getSMOfDay(), menu).openInventory();
 						}
 					}
 					else if(e.getSlot() == 13) {
-						if(menu.nextW - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tW), menu).openInventory();
+						if(menu.nextW - System.currentTimeMillis() > 7200000 & BStaffMember.getSMOfWeek() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getSMOfWeek(), menu).openInventory();
 						}
 					}
 					else if(e.getSlot() == 15) {
-						if(menu.nextM - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.tM), menu).openInventory();
+						if(menu.nextM - System.currentTimeMillis() > 7200000 & BStaffMember.getSMOfMonth() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getSMOfMonth(), menu).openInventory();
 						}
 					}
 					else if(e.getSlot() == 29) {
-						if(menu.nextD - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wD), menu).openInventory();
+						if(menu.nextD - System.currentTimeMillis() > 7200000 & BStaffMember.getWSMOfDay() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getWSMOfDay(), menu).openInventory();
 						}
 					}
 					else if(e.getSlot() == 31) {
-						if(menu.nextW - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wW), menu).openInventory();
+						if(menu.nextW - System.currentTimeMillis() > 7200000 & BStaffMember.getWSMOfWeek() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getWSMOfWeek(), menu).openInventory();
 						}
 					}
 					else if(e.getSlot() == 33) {
-						if(menu.nextM - System.currentTimeMillis() > 7200000) {
-							new StaffManagerPlayerMenu(p, BStaffMember.getByUuid(menu.wM), menu).openInventory();
+						if(menu.nextM - System.currentTimeMillis() > 7200000 & BStaffMember.getWSMOfMonth() != null) {
+							new StaffManagerPlayerMenu(p, BStaffMember.getWSMOfMonth(), menu).openInventory();
 						}
 					}
 				}
@@ -167,18 +156,6 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 				nextD = rs.getLong("nextDay");
 				nextW = rs.getLong("nextWeek");
 				nextM = rs.getLong("nextMonth");
-				tD = rs.getString("daily");
-				tW = rs.getString("weekly");
-				tM = rs.getString("monthly");
-				wD = rs.getString("wDaily");
-				wW = rs.getString("wWeekly");
-				wM = rs.getString("wMonthly");
-				tDor = rs.getString("dP");
-				tWor = rs.getString("wP");
-				tMor = rs.getString("MP");
-				wDor = rs.getString("wdP");
-				wWor = rs.getString("wwP");
-				wMor = rs.getString("wmP");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -199,20 +176,37 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(tD))
-					.name("&dStaff member of the day")
-					.lore("\n&fThe new staff member of"
-							+ "\n&fthe &dday &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tD) + " &kO&r &f- &d" + tDor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getSMOfDay() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getSMOfDay().getUuid()))
+						.name("&dStaff member of the day")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &dday &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfDay().calculateBetween(-1, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cStaff member of the day")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &cday &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked... &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
 	
@@ -230,20 +224,37 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(tW))
-					.name("&dStaff member of the week")
-					.lore("\n&fThe new staff member of"
-							+ "\n&fthe &dweek &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tW) + " &kO&r &f- &d" + tWor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getSMOfWeek() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getSMOfWeek().getUuid()))
+						.name("&dStaff member of the week")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &dweek &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfWeek().calculateBetween(-2, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cStaff member of the week")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &cweek &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked... &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
 	
@@ -261,22 +272,40 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(tM))
-					.name("&dStaff member of the month")
-					.lore("\n&fThe new staff member of"
-							+ "\n&fthe &dmonth &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(tM) + " &kO&r &f- &d" + tMor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getSMOfMonth() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getSMOfMonth().getUuid()))
+						.name("&dStaff member of the month")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &dmonth &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfMonth().calculateBetween(-3, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cStaff member of the month")
+						.lore("\n&fThe new staff member of"
+								+ "\n&fthe &cmonth &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked... &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
+	
 	
 	private ItemStack getWDaily() {
 		if(nextD - System.currentTimeMillis() < 7200000) {
@@ -292,20 +321,37 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(wD))
-					.name("&cWorst staff member of the day")
-					.lore("\n&fThe new &cworst &fstaff member of"
-							+ "\n&fthe &dday &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wD) + " &kO&r &f- &d" + wDor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getWSMOfDay() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getWSMOfDay().getUuid()))
+						.name("&cWorst staff member of the day")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &dday &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfDay().calculateBetween(-1, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cWorst member of the day")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &cday &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked... &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
 	
@@ -323,20 +369,37 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(wW))
-					.name("&cWorst staff member of the week")
-					.lore("\n&fThe new &cworst &fstaff member of"
-							+ "\n&fthe &dweek &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wW) + " &kO&r &f- &d" + wWor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getWSMOfWeek() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getWSMOfWeek().getUuid()))
+						.name("&cWorst staff member of the week")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &dweek &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfWeek().calculateBetween(-2, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cWorst staff member of the week")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &cweek &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked... &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
 	
@@ -354,20 +417,37 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 					.build();
 		}
 		else {
-			return new SkullItemBuilder()
-					.playerUuid(UUID.fromString(wM))
-					.name("&cWorst staff member of the month")
-					.lore("\n&fThe new &cworst &fstaff member of"
-							+ "\n&fthe &dmonth &fis..."
-							+ "\n&7&o(DRUM ROLL...)"
-							+ "\n "
-							+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(wM) + " &kO&r &f- &d" + wMor + " rating"
-							+ "\n "
-							+ "\n&fTime remaining for the new one:"
-							+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
-							+ "\n "
-							+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
-					.build();
+			if(BStaffMember.getWSMOfMonth() != null) {
+				return new SkullItemBuilder()
+						.playerUuid(UUID.fromString(BStaffMember.getWSMOfMonth().getUuid()))
+						.name("&cWorst staff member of the month")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &dmonth &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfMonth().calculateBetween(-3, System.currentTimeMillis()) + " rating"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
+								+ "\n "
+								+ (p.hasPermission("colonymc.staffmanager") ? "\n&dClick here to inspect them!" : ""))
+						.build();
+			}
+			else {
+				return new SkullItemBuilder()
+						.url("http://textures.minecraft.net/texture/3ed1aba73f639f4bc42bd48196c715197be2712c3b962c97ebf9e9ed8efa025")
+						.name("&cWorst staff member of the month")
+						.lore("\n&fThe new &cworst &fstaff member of"
+								+ "\n&fthe &cmonth &fis..."
+								+ "\n&7&o(DRUM ROLL...)"
+								+ "\n "
+								+ "\n &c&l&kO&r &cNo one was picked &kO&r"
+								+ "\n "
+								+ "\n&fTime remaining for the new one:"
+								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
+								+ "\n ")
+						.build();
+			}
 		}
 	}
 }

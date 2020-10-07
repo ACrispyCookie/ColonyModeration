@@ -5,11 +5,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.spigot.staffmanager.BStaffMemberComparator;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.DPunishment;
+import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback;
+import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback.FEEDBACK_TYPE;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.Promotion;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.Punishment;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.PunishmentType;
@@ -22,25 +23,19 @@ public class BStaffMember {
 	Rank rank;
 	long joinTimestamp;
 	long leaveTimestamp;
-	int wOvr;
-	int mOvr;
-	int dOvr;
 	ArrayList<Promotion> proms = new ArrayList<Promotion>();
 	ArrayList<Promotion> dems = new ArrayList<Promotion>();
 	ArrayList<Session> sessions = new ArrayList<Session>();
 	ArrayList<Punishment> bans = new ArrayList<Punishment>();
 	ArrayList<DPunishment> dbans = new ArrayList<DPunishment>();
 	ArrayList<Report> reports = new ArrayList<Report>();
-	HashMap<String, Double> dFeedback = new HashMap<String, Double>();
-	HashMap<String, Double> wFeedback = new HashMap<String, Double>();
-	HashMap<String, Double> mFeedback = new HashMap<String, Double>();
-	HashMap<String, Double> feedback = new HashMap<String, Double>();
-	static String smod;
-	static String smow;
-	static String smom;
-	static String wsmod;
-	static String wsmow;
-	static String wsmom;
+	ArrayList<Feedback> feedback = new ArrayList<Feedback>();
+	static BStaffMember smod;
+	static BStaffMember smow;
+	static BStaffMember smom;
+	static BStaffMember wsmod;
+	static BStaffMember wsmow;
+	static BStaffMember wsmom;
 	static ArrayList<BStaffMember> staff = new ArrayList<BStaffMember>();
 	static ArrayList<BStaffMember> allStaff = new ArrayList<BStaffMember>();
 	
@@ -51,7 +46,66 @@ public class BStaffMember {
 		this.leaveTimestamp = leaveTimestamp;
 		allStaff.add(this);
 		loadAll();
-		calculate();
+	}
+	
+	public void loadAll() {
+		loadProms();
+		loadSessions();
+		loadBans();
+		loadDBans();
+		loadReports();
+		loadFeedback();
+	}
+	
+	public int calculateBetween(long start, long end) {
+		long time = start;
+		if(start == -1) {
+			Calendar d = Calendar.getInstance();
+			d.set(Calendar.HOUR_OF_DAY, 0);
+			d.set(Calendar.MINUTE, 0);
+			d.set(Calendar.SECOND, 0);
+			d.set(Calendar.MILLISECOND, 0);
+			time = d.getTimeInMillis();
+		}
+		else if(start == -2) {
+			Calendar w = Calendar.getInstance();
+			w.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+			w.set(Calendar.HOUR_OF_DAY, 0);
+			w.set(Calendar.MINUTE, 0);
+			w.set(Calendar.SECOND, 0);
+			w.set(Calendar.MILLISECOND, 0);
+			time = w.getTimeInMillis();
+		}
+		else if(start == -3) {
+			Calendar m = Calendar.getInstance();
+			m.set(Calendar.DAY_OF_MONTH, 0);
+			m.set(Calendar.HOUR_OF_DAY, 0);
+			m.set(Calendar.MINUTE, 0);
+			m.set(Calendar.SECOND, 0);
+			m.set(Calendar.MILLISECOND, 0);
+			time = m.getTimeInMillis();
+		}
+		ArrayList<Feedback> feedback = getFeedbackAfter(time);
+		if(Feedback.getFromArray(feedback, FEEDBACK_TYPE.TOTAL) < 20) {
+			int tBans = countBansAfter(time);
+			int tReports = getReportsAfter(time).size();
+			int tPlaytime = getPlaytimeBetween(time, end);
+			int totalBanPoints = tBans * 20;
+			int totalReportPoints = tReports * 20;
+			int totalPlaytimePoints = tPlaytime / 60;
+			return (totalBanPoints + totalReportPoints + totalPlaytimePoints);
+		}
+		else {
+			int tBans = countBansAfter(time);
+			int tReports = getReportsAfter(time).size();
+			int tPlaytime = getPlaytimeBetween(time, end);
+			double tFairF = 5 - Feedback.getFromArray(feedback, FEEDBACK_TYPE.FAIR);
+			double tActiveF = 5 - ((Feedback.getFromArray(feedback, FEEDBACK_TYPE.ACTIVE) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.FRIENDLY) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.HELPFUL))/3);
+			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);
+			int totalReportPoints = (int) (tReports * 20 - tFairF * tReports);
+			int totalPlaytimePoints = (int) (tPlaytime / 60 - tActiveF * (tPlaytime/60));
+			return (totalBanPoints + totalReportPoints + totalPlaytimePoints);
+		}
 	}
 	
 	private Rank decideRank() {
@@ -66,16 +120,11 @@ public class BStaffMember {
 		return rank;
 	}
 	
-	public int countBansAfter(long timestamp) {
-		int r = 0;
-		for(Punishment rr : bans) {
-			if(rr.getTimestamp() >= timestamp) {
-				r++;
-			}
-		}
-		for(DPunishment rr : dbans) {
-			if(rr.getTimestamp() >= timestamp) {
-				r++;
+	public ArrayList<Feedback> getFeedbackAfter(long timestamp) {
+		ArrayList<Feedback> r = new ArrayList<Feedback>();
+		for(Feedback rr : feedback) {
+			if(rr.getAfter() >= timestamp) {
+				r.add(rr);
 			}
 		}
 		return r;
@@ -127,6 +176,21 @@ public class BStaffMember {
 		return s;
 	}
 	
+	public int countBansAfter(long timestamp) {
+		int r = 0;
+		for(Punishment rr : bans) {
+			if(rr.getTimestamp() >= timestamp) {
+				r++;
+			}
+		}
+		for(DPunishment rr : dbans) {
+			if(rr.getTimestamp() >= timestamp) {
+				r++;
+			}
+		}
+		return r;
+	}
+	
 	public String getTitles() {
 		long nextD = 0;
 		long nextW = 0;
@@ -143,17 +207,17 @@ public class BStaffMember {
 		}
 		String title = "";
 		if(nextD - System.currentTimeMillis() > 7200000) {
-			if(smod.equals(uuid)) {
+			if(smod != null && smod.equals(this)) {
 				title = "\n&d&kO&r &d&lSTAFF MEMBER OF THE DAY &kO&r";
 			}
 		}
 		if(nextW - System.currentTimeMillis() > 7200000) {
-			if(smow.equals(uuid)) {
+			if(smow != null && smow.equals(this)) {
 				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE WEEK &kO&r";
 			}
 		}
 		if(nextM - System.currentTimeMillis() > 7200000) {
-			if(smom.equals(uuid)) {
+			if(smom != null && smom.equals(this)) {
 				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE MONTH &kO&r";
 			}
 		}
@@ -179,33 +243,37 @@ public class BStaffMember {
 		}
 		String title = "";
 		if(nextD - System.currentTimeMillis() > 7200000) {
-			if(smod.equals(uuid)) {
+			if(smod != null && smod.equals(this)) {
 				title = "\n&d&kO&r &d&lSTAFF MEMBER OF THE DAY &kO&r";
 			}
-			if(wsmod.equals(uuid)) {
+			if(wsmod != null && wsmod.equals(this)) {
 				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE DAY &kO&r";
 			}
 		}
 		if(nextW - System.currentTimeMillis() > 7200000) {
-			if(smow.equals(uuid)) {
+			if(smow != null && smow.equals(this)) {
 				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE WEEK &kO&r";
 			}
-			if(wsmow.equals(uuid)) {
+			if(wsmow != null && wsmow.equals(this)) {
 				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE WEEK &kO&r";
 			}
 		}
 		if(nextM - System.currentTimeMillis() > 7200000) {
-			if(smom.equals(uuid)) {
+			if(smom != null && smom.equals(this)) {
 				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE MONTH &kO&r";
 			}
-			if(wsmom.equals(uuid)) {
+			if(wsmom != null && wsmom.equals(this)) {
 				title = title + "\n&c&kO&r &c&lWORST STAFF MEMBER OF THE MONTH &kO&r";
 			}
 		}
-		if(!title.equals("")) {
-			title = title + "\n ";
-		}
 		return title;
+	}
+	
+	public boolean hasTitles() {
+		if(getFullTitles().equals("")) {
+			return false;
+		}
+		return true;
 	}
 	
 	public String getUuid() {
@@ -252,41 +320,55 @@ public class BStaffMember {
 		return sessions;
 	}
 	
-	public HashMap<String, Double> getFeedback() {
+	public ArrayList<Feedback> getFeedback() {
 		return feedback;
 	}
 	
-	public HashMap<String, Double> getDailyF() {
-		return dFeedback;
+	public ArrayList<Feedback> getDailyF() {
+		Calendar time = Calendar.getInstance();
+		time.set(Calendar.HOUR_OF_DAY, 0);
+		time.set(Calendar.MINUTE, 0);
+		time.set(Calendar.SECOND, 0);
+		time.set(Calendar.MILLISECOND, 0);
+		ArrayList<Feedback> feed = new ArrayList<Feedback>();
+		for(Feedback f : feedback) {
+			if(f.getAfter() >= time.getTimeInMillis()) {
+				feed.add(f);
+			}
+		}
+		return feed;
 	}
 	
-	public HashMap<String, Double> getWeeklyF() {
-		return wFeedback;
+	public ArrayList<Feedback> getWeeklyF() {
+		Calendar time = Calendar.getInstance();
+		time.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		time.set(Calendar.HOUR_OF_DAY, 0);
+		time.set(Calendar.MINUTE, 0);
+		time.set(Calendar.SECOND, 0);
+		time.set(Calendar.MILLISECOND, 0);
+		ArrayList<Feedback> feed = new ArrayList<Feedback>();
+		for(Feedback f : feedback) {
+			if(f.getAfter() >= time.getTimeInMillis()) {
+				feed.add(f);
+			}
+		}
+		return feed;
 	}
 	
-	public HashMap<String, Double> getMonhtlyF() {
-		return mFeedback;
-	}
-	
-	public int getDailyOvr() {
-		return dOvr;
-	}
-	
-	public int getWeeklyOvr() {
-		return wOvr;
-	}
-	
-	public int getMonthlyOvr() {
-		return mOvr;
-	}
-	
-	public void loadAll() {
-		loadProms();
-		loadSessions();
-		loadBans();
-		loadDBans();
-		loadReports();
-		loadFeedback();
+	public ArrayList<Feedback> getMonthlyF() {
+		Calendar time = Calendar.getInstance();
+		time.set(Calendar.DAY_OF_MONTH, 0);
+		time.set(Calendar.HOUR_OF_DAY, 0);
+		time.set(Calendar.MINUTE, 0);
+		time.set(Calendar.SECOND, 0);
+		time.set(Calendar.MILLISECOND, 0);
+		ArrayList<Feedback> feed = new ArrayList<Feedback>();
+		for(Feedback f : feedback) {
+			if(f.getAfter() >= time.getTimeInMillis()) {
+				feed.add(f);
+			}
+		}
+		return feed;
 	}
 	
 	private void loadProms() {
@@ -372,9 +454,6 @@ public class BStaffMember {
 	}
 	
 	private void loadFeedback() {
-		dFeedback.clear();
-		wFeedback.clear();
-		mFeedback.clear();
 		Calendar d = Calendar.getInstance();
 		d.set(Calendar.HOUR_OF_DAY, 0);
 		d.set(Calendar.MINUTE, 0);
@@ -393,128 +472,48 @@ public class BStaffMember {
 		m.set(Calendar.SECOND, 0);
 		m.set(Calendar.MILLISECOND, 0);
 		for(int i = 0; i < 5; i++) {
-			String count = (i == 0 ? "active" : i == 1 ? "helpful" : i == 2 ? "friendly" : i == 3 ? "fair" : i == 4 ? "total" : "");
+			FEEDBACK_TYPE count = (i == 0 ? FEEDBACK_TYPE.ACTIVE : i == 1 ? FEEDBACK_TYPE.HELPFUL : i == 2 ? FEEDBACK_TYPE.FRIENDLY : i == 3 ? FEEDBACK_TYPE.FAIR : i == 4 ? FEEDBACK_TYPE.TOTAL : null);
 			ResultSet rs = MainDatabase.getResultSet("SELECT * FROM StaffFeedback WHERE uuid='" + uuid + "'");
 			try {
-				int tC = 0;
 				int totalStars = 0;
-				int dC = 0;
 				int dStars = 0;
-				int wC = 0;
 				int wStars = 0;
-				int mC = 0;
 				int mStars = 0;
+				int tC = 0;
+				int dC = 0;
+				int wC = 0;
+				int mC = 0;
 				while(rs.next()) {
-					totalStars = totalStars + rs.getInt(count);
+					totalStars = totalStars + rs.getInt(count.name().toLowerCase());
 					tC++;
 					if(rs.getLong("timestamp") >= d.getTimeInMillis()) {
-						dStars = dStars + rs.getInt(count);
+						dStars = dStars + rs.getInt(count.name().toLowerCase());
 						dC++;
 					}
 					if(rs.getLong("timestamp") >= w.getTimeInMillis()) {
-						wStars = wStars + rs.getInt(count);
+						wStars = wStars + rs.getInt(count.name().toLowerCase());
 						wC++;
 					}
 					if(rs.getLong("timestamp") >= m.getTimeInMillis()) {
-						mStars = mStars + rs.getInt(count);
+						mStars = mStars + rs.getInt(count.name().toLowerCase());
 						mC++;
 					}
 				}
 				if(i < 4) {
-					feedback.put(count, (double) totalStars / (tC == 0 ? 1 : tC));
-					dFeedback.put(count, (double) dStars / (dC == 0 ? 1 : dC));
-					wFeedback.put(count, (double) wStars / (wC == 0 ? 1 : wC));
-					mFeedback.put(count, (double) mStars / (mC == 0 ? 1 : mC));
+					feedback.add(new Feedback(count, 0, (double) totalStars / (tC == 0 ? 1 : tC)));
+					feedback.add(new Feedback(count, d.getTimeInMillis(), (double) dStars / (dC == 0 ? 1 : dC)));
+					feedback.add(new Feedback(count, w.getTimeInMillis(), (double) wStars / (mC == 0 ? 1 : wC)));
+					feedback.add(new Feedback(count, m.getTimeInMillis(), (double) mStars / (mC == 0 ? 1 : mC)));
 				}
 				else {
-					feedback.put(count, (double) tC);
-					dFeedback.put(count, (double) dC);
-					wFeedback.put(count, (double) wC);
-					mFeedback.put(count, (double) mC);
+					feedback.add(new Feedback(count, 0, (double) tC));
+					feedback.add(new Feedback(count, d.getTimeInMillis(), (double) dC));
+					feedback.add(new Feedback(count, w.getTimeInMillis(), (double) wC));
+					feedback.add(new Feedback(count, m.getTimeInMillis(), (double) mC));
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		}
-	}
-	
-	private void calculate() {
-		Calendar d = Calendar.getInstance();
-		d.set(Calendar.HOUR_OF_DAY, 0);
-		d.set(Calendar.MINUTE, 0);
-		d.set(Calendar.SECOND, 0);
-		d.set(Calendar.MILLISECOND, 0);
-		Calendar w = Calendar.getInstance();
-		w.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-		w.set(Calendar.HOUR_OF_DAY, 0);
-		w.set(Calendar.MINUTE, 0);
-		w.set(Calendar.SECOND, 0);
-		w.set(Calendar.MILLISECOND, 0);
-		Calendar m = Calendar.getInstance();
-		m.set(Calendar.DAY_OF_MONTH, 0);
-		m.set(Calendar.HOUR_OF_DAY, 0);
-		m.set(Calendar.MINUTE, 0);
-		m.set(Calendar.SECOND, 0);
-		m.set(Calendar.MILLISECOND, 0);
-		if(dFeedback.get("total") < 20) {
-			int tBans = countBansAfter(d.getTimeInMillis());
-			int tReports = getReportsAfter(d.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(d.getTimeInMillis(), System.currentTimeMillis());
-			int totalBanPoints = tBans * 20;
-			int totalReportPoints = tReports * 20;
-			int totalPlaytimePoints = tPlaytime / 60;
-			dOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
-		}
-		else {
-			int tBans = countBansAfter(d.getTimeInMillis());
-			int tReports = getReportsAfter(d.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(d.getTimeInMillis(), System.currentTimeMillis());
-			double tFairF = 5 - dFeedback.get("fair");
-			double tActiveF = 5 - ((dFeedback.get("active") + dFeedback.get("friendly") + dFeedback.get("helpful"))/3);
-			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);
-			int totalReportPoints = (int) (tReports * 20 - tFairF * tReports);
-			int totalPlaytimePoints = (int) (tPlaytime / 60 - tActiveF * (tPlaytime/60));
-			dOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
-		}
-		if(wFeedback.get("total") < 20) {
-			int tBans = countBansAfter(w.getTimeInMillis());
-			int tReports = getReportsAfter(w.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(w.getTimeInMillis(), System.currentTimeMillis());
-			int totalBanPoints = tBans * 20;
-			int totalReportPoints = tReports * 20;
-			int totalPlaytimePoints = tPlaytime / 60;
-			wOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
-		}
-		else {
-			int tBans = countBansAfter(w.getTimeInMillis());
-			int tReports = getReportsAfter(w.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(w.getTimeInMillis(), System.currentTimeMillis());
-			double tFairF = 5 - wFeedback.get("fair");
-			double tActiveF = 5 - ((wFeedback.get("active") + wFeedback.get("friendly") + wFeedback.get("helpful"))/3);
-			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);
-			int totalReportPoints = (int) (tReports * 20 - tFairF * tReports);
-			int totalPlaytimePoints = (int) (tPlaytime / 60 - tActiveF * (tPlaytime/60));
-			wOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
-		}
-		if(mFeedback.get("total") < 20) {
-			int tBans = countBansAfter(m.getTimeInMillis());
-			int tReports = getReportsAfter(m.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(m.getTimeInMillis(), System.currentTimeMillis());
-			int totalBanPoints = tBans * 20;
-			int totalReportPoints = tReports * 20;
-			int totalPlaytimePoints = tPlaytime / 60;
-			mOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
-		}
-		else {
-			int tBans = countBansAfter(m.getTimeInMillis());
-			int tReports = getReportsAfter(m.getTimeInMillis()).size();
-			int tPlaytime = getPlaytimeBetween(m.getTimeInMillis(), System.currentTimeMillis());
-			double tFairF = 5 - mFeedback.get("fair");
-			double tActiveF = 5 - ((mFeedback.get("active") + mFeedback.get("friendly") + mFeedback.get("helpful"))/3);
-			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);
-			int totalReportPoints = (int) (tReports * 20 - tFairF * tReports);
-			int totalPlaytimePoints = (int) (tPlaytime / 60 - tActiveF * (tPlaytime/60));
-			mOvr = (totalBanPoints + totalReportPoints + totalPlaytimePoints);
 		}
 	}
 	
@@ -541,27 +540,27 @@ public class BStaffMember {
 		return allStaff;
 	}
 	
-	public static String getSMOfDay() {
+	public static BStaffMember getSMOfDay() {
 		return smod;
 	}
 	
-	public static String getSMOfWeek() {
+	public static BStaffMember getSMOfWeek() {
 		return smow;
 	}
 	
-	public static String getSMOfMonth() {
+	public static BStaffMember getSMOfMonth() {
 		return smom;
 	}
 	
-	public static String getWSMOfDay() {
+	public static BStaffMember getWSMOfDay() {
 		return wsmod;
 	}
 	
-	public static String getWSMOfWeek() {
+	public static BStaffMember getWSMOfWeek() {
 		return wsmow;
 	}
 	
-	public static String getWSMOfMonth() {
+	public static BStaffMember getWSMOfMonth() {
 		return wsmom;
 	}
 	
@@ -581,12 +580,12 @@ public class BStaffMember {
 			}
 			rs = MainDatabase.getResultSet("SELECT * FROM NextTopStaff WHERE id=0;");
 			if(rs.next()) {
-				smod = rs.getString("daily");
-				smow = rs.getString("weekly");
-				smom = rs.getString("monthly");
-				wsmod = rs.getString("wDaily");
-				wsmow = rs.getString("wWeekly");
-				wsmom = rs.getString("wMonthly");
+				smod = rs.getString("daily") == null ? null : BStaffMember.getByUuid(rs.getString("daily"));
+				smow = rs.getString("weekly") == null ? null : BStaffMember.getByUuid(rs.getString("weekly"));
+				smom = rs.getString("monthly") == null ? null : BStaffMember.getByUuid(rs.getString("monthly"));
+				wsmod = rs.getString("wDaily") == null ? null : BStaffMember.getByUuid(rs.getString("wDaily"));
+				wsmow = rs.getString("wWeekly") == null ? null : BStaffMember.getByUuid(rs.getString("wWeekly"));
+				wsmom = rs.getString("wMonthly") == null ? null : BStaffMember.getByUuid(rs.getString("wMonthly"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
