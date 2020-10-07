@@ -38,7 +38,7 @@ public class TopStaffAnnouncer {
 				decideDay(da.getTimeInMillis());
 				startDay();
 			}
-		}, (da.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
+		}, (da.getTimeInMillis() - System.currentTimeMillis() - 10000) / 1000, TimeUnit.SECONDS);
 	}
 	
 	private void startWeek() {
@@ -56,7 +56,7 @@ public class TopStaffAnnouncer {
 				decideWeek(we.getTimeInMillis());
 				startWeek();
 			}
-		}, (we.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
+		}, (we.getTimeInMillis() - System.currentTimeMillis() - 10000) / 1000, TimeUnit.SECONDS);
 	}
 	
 	private void startMonth() {
@@ -74,7 +74,7 @@ public class TopStaffAnnouncer {
 				decideMonth(mo.getTimeInMillis());
 				startMonth();
 			}
-		}, (mo.getTimeInMillis() - System.currentTimeMillis()) / 1000, TimeUnit.SECONDS);
+		}, (mo.getTimeInMillis() - System.currentTimeMillis() - 10000) / 1000, TimeUnit.SECONDS);
 	}
 	
 	private void decideDay(long day) {
@@ -82,12 +82,13 @@ public class TopStaffAnnouncer {
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
 		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(day, System.currentTimeMillis());
-			if(staff == null || ovr > staff.calculateBetween(day, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(day - 86400000, day);
+			if(staff == null || ovr > staff.calculateBetween(day, day)) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -96,17 +97,22 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(day, System.currentTimeMillis());
-			if(wStaff == null || ovr < wStaff.calculateBetween(day, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(day - 86400000, day);
+			if(wStaff == null || ovr < wStaff.calculateBetween(day - 86400000, day)) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		if(tOvr > 0) {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET daily='" + staff.getUuid() + "';");
-			MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily='" + wStaff.getUuid() + "';");
 		}
 		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET daily=NULL;");
+		}
+		if(wOvr != tOvr) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily='" + wStaff.getUuid() + "';");
+		}
+		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET wDaily=NULL;");
 		}
 	}
@@ -116,12 +122,13 @@ public class TopStaffAnnouncer {
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
 		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(week, System.currentTimeMillis());
-			if(staff == null || ovr > staff.calculateBetween(week, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(week - 604800000, week);
+			if(staff == null || ovr > staff.calculateBetween(week - 604800000, week)) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -130,17 +137,22 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(week, System.currentTimeMillis());
-			if(wStaff == null || ovr < wStaff.calculateBetween(week, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(week - 604800000, week);
+			if(wStaff == null || ovr < wStaff.calculateBetween(week - 604800000, week)) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		if(tOvr > 0) {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly='" + staff.getUuid() + "';");
-			MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly='" + wStaff.getUuid() + "';");
 		}
 		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET weekly=NULL;");
+		}
+		if(tOvr != wOvr) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly='" + wStaff.getUuid() + "';");
+		}
+		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET wWeekly=NULL;");
 		}
 	}
@@ -149,13 +161,17 @@ public class TopStaffAnnouncer {
 		BStaffMember.loadStaff();
 		BStaffMember staff = null;
 		BStaffMember wStaff = null;
+		Calendar previousMonth = Calendar.getInstance();
+		previousMonth.setTimeInMillis(month);
+		previousMonth.add(Calendar.MONTH, -1);
 		int tOvr = 0;
+		int wOvr = 0;
 		for(BStaffMember m : BStaffMember.getStaff()) {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(month, System.currentTimeMillis());
-			if(staff == null || ovr > staff.calculateBetween(month, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(previousMonth.getTimeInMillis(), month);
+			if(staff == null || ovr > staff.calculateBetween(previousMonth.getTimeInMillis(), month)) {
 				staff = m;
 				tOvr = ovr;
 			}
@@ -164,17 +180,22 @@ public class TopStaffAnnouncer {
 			if(m.getUuid().equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
 				continue;
 			}
-			int ovr = m.calculateBetween(month, System.currentTimeMillis());
-			if(wStaff == null || ovr < wStaff.calculateBetween(month, System.currentTimeMillis())) {
+			int ovr = m.calculateBetween(previousMonth.getTimeInMillis(), month);
+			if(wStaff == null || ovr < wStaff.calculateBetween(previousMonth.getTimeInMillis(), month)) {
 				wStaff = m;
+				wOvr = ovr;
 			}
 		}
 		if(tOvr > 0) {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly='" + staff.getUuid() + "';");
-			MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly='" + wStaff.getUuid() + "';");
 		}
 		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET monthly=NULL;");
+		}
+		if(tOvr != wOvr) {
+			MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly='" + wStaff.getUuid() + "';");
+		}
+		else {
 			MainDatabase.sendStatement("UPDATE NextTopStaff SET wMonthly=NULL;");
 		}
 	}

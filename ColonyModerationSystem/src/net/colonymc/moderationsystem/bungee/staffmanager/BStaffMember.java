@@ -58,47 +58,20 @@ public class BStaffMember {
 	}
 	
 	public int calculateBetween(long start, long end) {
-		long time = start;
-		if(start == -1) {
-			Calendar d = Calendar.getInstance();
-			d.set(Calendar.HOUR_OF_DAY, 0);
-			d.set(Calendar.MINUTE, 0);
-			d.set(Calendar.SECOND, 0);
-			d.set(Calendar.MILLISECOND, 0);
-			time = d.getTimeInMillis();
-		}
-		else if(start == -2) {
-			Calendar w = Calendar.getInstance();
-			w.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-			w.set(Calendar.HOUR_OF_DAY, 0);
-			w.set(Calendar.MINUTE, 0);
-			w.set(Calendar.SECOND, 0);
-			w.set(Calendar.MILLISECOND, 0);
-			time = w.getTimeInMillis();
-		}
-		else if(start == -3) {
-			Calendar m = Calendar.getInstance();
-			m.set(Calendar.DAY_OF_MONTH, 0);
-			m.set(Calendar.HOUR_OF_DAY, 0);
-			m.set(Calendar.MINUTE, 0);
-			m.set(Calendar.SECOND, 0);
-			m.set(Calendar.MILLISECOND, 0);
-			time = m.getTimeInMillis();
-		}
-		ArrayList<Feedback> feedback = getFeedbackAfter(time);
+		ArrayList<Feedback> feedback = getFeedbackAfter(start);
 		if(Feedback.getFromArray(feedback, FEEDBACK_TYPE.TOTAL) < 20) {
-			int tBans = countBansAfter(time);
-			int tReports = getReportsAfter(time).size();
-			int tPlaytime = getPlaytimeBetween(time, end);
+			int tBans = countBansAfter(start);
+			int tReports = getReportsAfter(start).size();
+			int tPlaytime = getPlaytimeBetween(start, end);
 			int totalBanPoints = tBans * 20;
 			int totalReportPoints = tReports * 20;
 			int totalPlaytimePoints = tPlaytime / 60;
 			return (totalBanPoints + totalReportPoints + totalPlaytimePoints);
 		}
 		else {
-			int tBans = countBansAfter(time);
-			int tReports = getReportsAfter(time).size();
-			int tPlaytime = getPlaytimeBetween(time, end);
+			int tBans = countBansAfter(start);
+			int tReports = getReportsAfter(start).size();
+			int tPlaytime = getPlaytimeBetween(start, end);
 			double tFairF = 5 - Feedback.getFromArray(feedback, FEEDBACK_TYPE.FAIR);
 			double tActiveF = 5 - ((Feedback.getFromArray(feedback, FEEDBACK_TYPE.ACTIVE) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.FRIENDLY) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.HELPFUL))/3);
 			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);

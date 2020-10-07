@@ -2,6 +2,7 @@ package net.colonymc.moderationsystem.spigot.staffmanager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -27,6 +28,10 @@ import net.colonymc.moderationsystem.spigot.Main;
 
 public class TopStaffManagerMenu implements Listener, InventoryHolder {
 
+	final int ONE_DAY = 86400000;
+	final int TWO_DAYS = 172800000;
+	final int ONE_WEEK = 604800000;
+	final int TWO_WEEKS = 1209600000;
 	Inventory inv;
 	Player p;
 	long nextD;
@@ -56,6 +61,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 	private void fillInventory() {
 		if(System.currentTimeMillis() >= nextD || System.currentTimeMillis() >= nextW || System.currentTimeMillis() >= nextM) {
 			setup();
+			BStaffMember.loadStaff();
 		}
 		if(p.hasPermission("colonymc.staffmanager")) {
 			inv.setItem(49, new ItemStackBuilder(Material.ARROW).name("&dGo back").build());
@@ -184,7 +190,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dday &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfDay().calculateBetween(-1, System.currentTimeMillis()) + " rating"
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfDay().calculateBetween(nextD - TWO_DAYS, nextD - ONE_DAY) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
@@ -232,7 +238,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dweek &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfWeek().calculateBetween(-2, System.currentTimeMillis()) + " rating"
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfWeek().calculateBetween(nextW - TWO_WEEKS, nextW - ONE_WEEK) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
@@ -273,6 +279,12 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			if(BStaffMember.getSMOfMonth() != null) {
+				Calendar end = Calendar.getInstance();
+				end.setTimeInMillis(nextM);
+				end.add(Calendar.MONTH, -1);
+				Calendar start = Calendar.getInstance();
+				start.setTimeInMillis(nextM);
+				start.add(Calendar.MONTH, -2);
 				return new SkullItemBuilder()
 						.playerUuid(UUID.fromString(BStaffMember.getSMOfMonth().getUuid()))
 						.name("&dStaff member of the month")
@@ -280,7 +292,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dmonth &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfMonth().calculateBetween(-3, System.currentTimeMillis()) + " rating"
+								+ "\n &d&l&kO&r &d&l" + MainDatabase.getName(BStaffMember.getSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getSMOfMonth().calculateBetween(start.getTimeInMillis(), end.getTimeInMillis()) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
@@ -329,7 +341,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dday &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfDay().calculateBetween(-1, System.currentTimeMillis()) + " rating"
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfDay().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfDay().calculateBetween(nextD - TWO_DAYS, nextD - ONE_DAY) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextD - System.currentTimeMillis())/1000)
@@ -377,7 +389,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dweek &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfWeek().calculateBetween(-2, System.currentTimeMillis()) + " rating"
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfWeek().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfWeek().calculateBetween(nextW - TWO_WEEKS, nextW - ONE_WEEK) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextW - System.currentTimeMillis())/1000)
@@ -418,6 +430,12 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		}
 		else {
 			if(BStaffMember.getWSMOfMonth() != null) {
+				Calendar end = Calendar.getInstance();
+				end.setTimeInMillis(nextM);
+				end.add(Calendar.MONTH, -1);
+				Calendar start = Calendar.getInstance();
+				start.setTimeInMillis(nextM);
+				start.add(Calendar.MONTH, -2);
 				return new SkullItemBuilder()
 						.playerUuid(UUID.fromString(BStaffMember.getWSMOfMonth().getUuid()))
 						.name("&cWorst staff member of the month")
@@ -425,7 +443,7 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 								+ "\n&fthe &dmonth &fis..."
 								+ "\n&7&o(DRUM ROLL...)"
 								+ "\n "
-								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfMonth().calculateBetween(-3, System.currentTimeMillis()) + " rating"
+								+ "\n &c&l&kO&r &c&l" + MainDatabase.getName(BStaffMember.getWSMOfMonth().getUuid()) + " &kO&r &f- &d" + BStaffMember.getWSMOfMonth().calculateBetween(start.getTimeInMillis(), end.getTimeInMillis()) + " rating"
 								+ "\n "
 								+ "\n&fTime remaining for the new one:"
 								+ "\n&d" + Time.formatted((nextM - System.currentTimeMillis())/1000)
