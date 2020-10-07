@@ -221,9 +221,6 @@ public class BStaffMember {
 				title = title + "\n&d&kO&r &d&lSTAFF MEMBER OF THE MONTH &kO&r";
 			}
 		}
-		if(!title.equals("")) {
-			title = title + "\n ";
-		}
 		return title;
 	}
 	
