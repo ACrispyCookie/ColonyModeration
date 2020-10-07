@@ -66,12 +66,8 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 				"\n &5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
 				"\n &5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
 				"\n " +
-				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
-				(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
-						+ "\n&cbecause they no longer"
-						+ "\n&chave their discord linked!"))
-				+ (b.isStaff() ? "" : "\n "
-						+ "\n&cThis player is no longer a staff member!")).build();
+				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&d&nTitles:\n " + b.getFullTitles() + "\n " : "\n&5» &d&nTitles:\n " + b.getTitles() + "\n " : ""))
+				.build();
 		inv.setItem(13, item);
 		if(b.isStaff()) {
 			if(p.hasPermission("colonymc.staffmanager")) {
