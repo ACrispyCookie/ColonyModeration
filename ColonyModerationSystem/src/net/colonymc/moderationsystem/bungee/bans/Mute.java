@@ -120,7 +120,7 @@ public class Mute implements Listener {
 	
 	public static Mute getByName(String name) {
 		for(Mute m : mutes) {
-			if(m.getPlayerName().equals(name)) {
+			if(m.getPlayerName().equalsIgnoreCase(name)) {
 				return m;
 			}
 		}

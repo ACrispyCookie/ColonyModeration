@@ -25,9 +25,6 @@ public class UnbanCommand extends Command implements TabExecutor {
             if(m.getPlayerName().toLowerCase().startsWith(search.toLowerCase())) {
         		matches.add(m.getPlayerName());
             }
-            else if(m.getId().toLowerCase().startsWith(search.toLowerCase())) {
-            	matches.add(m.getId());
-            }
 		}
 		return matches;
 	}

@@ -105,7 +105,7 @@ public class Ban {
 	
 	public static Ban getByName(String name) {
 		for(Ban m : bans) {
-			if(m.getPlayerName().equals(name)) {
+			if(m.getPlayerName().equalsIgnoreCase(name)) {
 				return m;
 			}
 		}

@@ -12,7 +12,6 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.TabExecutor;
 
@@ -23,9 +22,8 @@ public class UnmuteCommand extends Command implements TabExecutor {
 		Set<String> matches = new HashSet<>();
 		String search = args[0].toLowerCase();
 		for (Mute m : Mute.mutes) {
-			ProxiedPlayer p = m.getPlayer();
-            if(p.getName().toLowerCase().startsWith(search.toLowerCase())) {
-        		matches.add(p.getName());
+            if(m.getPlayerName().toLowerCase().startsWith(search.toLowerCase())) {
+        		matches.add(m.getPlayerName());
             }
 		}
 		return matches;

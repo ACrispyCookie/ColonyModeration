@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.colonyapi.Time;
@@ -26,14 +28,14 @@ public class CheckCommand extends Command implements TabExecutor {
 	
 	@Override
 	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-		if(args.length == 1) {
-			ArrayList<String> names = new ArrayList<String>();
-			for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-				names.add(p.getName());
-			}
-			return names;
+		Set<String> matches = new HashSet<>();
+		String search = args[0].toLowerCase();
+		for (ProxiedPlayer m : ProxyServer.getInstance().getPlayers()) {
+            if(m.getName().toLowerCase().startsWith(search.toLowerCase())) {
+        		matches.add(m.getName());
+            }
 		}
-		return null;
+		return matches;
 	}
 
 	@Override
@@ -114,21 +116,21 @@ public class CheckCommand extends Command implements TabExecutor {
 							String firstJoinTime = sdf.format(firstJoin);
 							String timesBanned = String.valueOf(rs.getInt("timesBanned"));
 							String timesMuted = String.valueOf(rs.getInt("timesMuted"));
-							String isBanned = Ban.getByName(args[0]) != null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
-							String isMuted = Mute.getByName(args[0]) != null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
-							String isBanEvading = Ban.getByIp(ip) != null && Ban.getByName(args[0]) == null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
+							String isBanned = Ban.getByUuid(playerUuid) != null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
+							String isMuted = Mute.getByUuid(playerUuid) != null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
+							String isBanEvading = Ban.getByIp(ip) != null && Ban.getByUuid(playerUuid) == null ? ChatColor.translateAlternateColorCodes('&', "&aYes") : ChatColor.translateAlternateColorCodes('&', "&cNo");
 							String isOnline = ProxyServer.getInstance().getPlayer(args[0]) != null ? ChatColor.translateAlternateColorCodes('&', "&aOnline") : ChatColor.translateAlternateColorCodes('&', "&cOffline");
 							String currentServer = ProxyServer.getInstance().getPlayer(args[0]) != null ? ProxyServer.getInstance().getPlayer(args[0]).getServer().getInfo().getName() : null;
-							String banReason = Ban.getByName(args[0]) != null ? Ban.getByName(args[0]).getReason() : null;
-							String banModerator = Ban.getByName(args[0]) != null ? Ban.getByName(args[0]).getStaff() : null;
-							String bannedUntil = Ban.getByName(args[0]) != null ? sdf.format(new Date(Ban.getByName(args[0]).getBannedUntil())) : null;
-							String banID = Ban.getByName(args[0]) != null ? Ban.getByName(args[0]).getId() : null;
-							String muteReason = Mute.getByName(args[0]) != null ? Mute.getByName(args[0]).getReason() : null;
-							String muteModerator = Mute.getByName(args[0]) != null ? Mute.getByName(args[0]).getStaff() : null;
-							String mutedUntil = Mute.getByName(args[0]) != null ? sdf.format(new Date(Mute.getByName(args[0]).getMutedUntil())) : null;
-							String muteID = Mute.getByName(args[0]) != null ? Mute.getByName(args[0]).getId() : null;
-							String banEvadingName = Ban.getByIp(ip) != null && Ban.getByName(args[0]) == null ? Ban.getByIp(ip).getPlayerName() : null;
-							String banEvadingUuid = Ban.getByIp(ip) != null && Ban.getByName(args[0]) == null ? Ban.getByIp(ip).getUuid() : null;
+							String banReason = Ban.getByUuid(playerUuid) != null ? Ban.getByUuid(playerUuid).getReason() : null;
+							String banModerator = Ban.getByUuid(playerUuid) != null ? Ban.getByUuid(playerUuid).getStaff() : null;
+							String bannedUntil = Ban.getByUuid(playerUuid) != null ? sdf.format(new Date(Ban.getByUuid(playerUuid).getBannedUntil())) : null;
+							String banID = Ban.getByUuid(playerUuid) != null ? Ban.getByUuid(playerUuid).getId() : null;
+							String muteReason = Mute.getByUuid(playerUuid) != null ? Mute.getByUuid(playerUuid).getReason() : null;
+							String muteModerator = Mute.getByUuid(playerUuid) != null ? Mute.getByUuid(playerUuid).getStaff() : null;
+							String mutedUntil = Mute.getByUuid(playerUuid) != null ? sdf.format(new Date(Mute.getByUuid(playerUuid).getMutedUntil())) : null;
+							String muteID = Mute.getByUuid(playerUuid) != null ? Mute.getByUuid(playerUuid).getId() : null;
+							String banEvadingName = Ban.getByIp(ip) != null && Ban.getByUuid(playerUuid) == null ? Ban.getByIp(ip).getPlayerName() : null;
+							String banEvadingUuid = Ban.getByIp(ip) != null && Ban.getByUuid(playerUuid) == null ? Ban.getByIp(ip).getUuid() : null;
 							ArrayList<String> alts = new ArrayList<String>();
 							rs = MainDatabase.getResultSet("SELECT * FROM PlayerInfo WHERE ip='" + ip + "';");
 							while(rs.next()) {
@@ -139,10 +141,10 @@ public class CheckCommand extends Command implements TabExecutor {
 							TextComponent header;
 							TextComponent footer = new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n\n&m-------------------------------------------------"));
 							if(isBanned.equals(ChatColor.translateAlternateColorCodes('&', "&aYes"))) {
-								header = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&m------------------&r &d" + args[0] + " &c(Banned) &f&m------------------\n"));
+								header = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&m------------------&r &d" + MainDatabase.getName(playerUuid) + " &c(Banned) &f&m------------------\n"));
 							}
 							else {
-								header = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&m------------------&r &d" + args[0] + " &f&m------------------\n"));
+								header = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&m------------------&r &d" + MainDatabase.getName(playerUuid) + " &f&m------------------\n"));
 							}
 							header.addExtra(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fStatus: " + isOnline)));
 							if(isOnline.equals(ChatColor.translateAlternateColorCodes('&', "&aOnline"))) {
