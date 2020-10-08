@@ -118,8 +118,8 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 		}
 		else {
 			inv.setItem(12, new ItemStackBuilder(Material.NETHER_STAR)
-					.name("&dRecommended duration for each player")
-					.lore("\n&fClick this if you want the duration\n&ffor the punishment to be calculated automatically!\n \n&fRecommended Duration: &d" + Time.formatted(getRecommendedDuration()))
+					.name("&dRecommended duration")
+					.lore("\n&fClick this if you want the duration\n&ffor the punishment to be calculated automatically!\n \n&fRecommended Duration: &d" + Time.formatted(getRecommendedDuration()/1000))
 					.build());
 		}
 	}

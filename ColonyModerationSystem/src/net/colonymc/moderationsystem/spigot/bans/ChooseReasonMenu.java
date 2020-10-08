@@ -312,7 +312,6 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 								}
 							}
 						});
-						p.playSound(p.getLocation(), Sound.ORB_PICKUP, 2, 1);
 					}
 					else {
 						p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);

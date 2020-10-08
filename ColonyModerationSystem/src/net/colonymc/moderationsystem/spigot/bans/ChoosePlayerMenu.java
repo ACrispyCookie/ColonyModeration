@@ -129,7 +129,7 @@ public class ChoosePlayerMenu implements Listener,InventoryHolder {
 									+ "\n&fTimes Muted: &d" + pl.getTimesMuted()
 									+ "\n&fStatus: " + (pl.isOnline() ? "&aOnline" : "&cOffline")
 									+ "\n&fServer: &d" + (pl.getServer() == null ? "None" : pl.getServer().getName())
-									+ ((selectedPlayers.contains(pl) ? "\n\n&aSelected!" : "")))
+									+ ((selectedPlayers.contains(pl) ? "\n\n&aSelected!\n&dClick here to deselect them!" : "")))
 							.build());
 				}
 				else {
@@ -328,8 +328,15 @@ public class ChoosePlayerMenu implements Listener,InventoryHolder {
 									String uuid = MainDatabase.getUuid(msg);
 									if(!uuid.equals("Not Found")) {
 										MenuPlayer p = MenuPlayer.load(uuid);
-										menu.addPlayer(p);
-										menu.openInventory();
+										if(menu.selectedPlayers.contains(p)) {
+											menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou already have this player selected!"));
+											menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
+											menu.openInventory();
+										}
+										else {
+											menu.addPlayer(p);
+											menu.openInventory();
+										}
 									}
 									else {
 										menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cWe couldn't find this player!"));
