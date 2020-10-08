@@ -20,6 +20,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -35,21 +36,33 @@ public class SpigotConnector implements Listener {
 		String subChannel = in.readUTF();
 		if(e.getTag().equalsIgnoreCase("BanChannel")) {
 			if(subChannel.equalsIgnoreCase("Punish")) {
-				String playerName = in.readUTF();
+				String playerUuid = in.readUTF();
 				String staffMember = in.readUTF();
 				String reason = in.readUTF();
 				int reportId = in.readInt();
-				new Punishment(playerName, ProxyServer.getInstance().getPlayer(staffMember), reason, reportId).execute();
+				if(reportId == -1 || Report.getById(reportId) != null) {
+					new Punishment(playerUuid, ProxyServer.getInstance().getPlayer(staffMember), reason, reportId).execute();
+				}
+				else {
+					ProxyServer.getInstance().getPlayer(staffMember).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error occured while trying to process the "
+							+ "report #" + reportId + "! The report has been probably processed by another staff member!")));
+				}
 			}
 			else if(subChannel.equalsIgnoreCase("CustomPunish")) {
-				String playerName = in.readUTF();
+				String playerUuid = in.readUTF();
 				String staffMember = in.readUTF();
 				String reason = in.readUTF();
 				long duration = in.readLong();
 				String typeName = in.readUTF();
 				PunishmentType type = PunishmentType.valueOf(typeName);
 				int reportId = in.readInt();
-				new Punishment(playerName, ProxyServer.getInstance().getPlayer(staffMember), reason, duration, type, reportId).execute();
+				if(reportId == -1 || Report.getById(reportId) != null) {
+					new Punishment(playerUuid, ProxyServer.getInstance().getPlayer(staffMember), reason, duration, type, reportId).execute();
+				}
+				else {
+					ProxyServer.getInstance().getPlayer(staffMember).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error occured while trying to process the "
+							+ "report #" + reportId + "! The report has been probably processed by another staff member!")));
+				}
 			}
 			else if(subChannel.equalsIgnoreCase("MassPunish")) {
 				String staffMember = in.readUTF();
@@ -65,6 +78,10 @@ public class SpigotConnector implements Listener {
 				}
 				String[] players = in.readUTF().split(",");
 				new MassPunishment(players, ProxyServer.getInstance().getPlayer(staffMember), reason, duration, type).execute();
+			}
+			else if(subChannel.equalsIgnoreCase("PlayerList")) {
+				String player = in.readUTF();
+				sendPlayers(ProxyServer.getInstance().getPlayer(player).getServer().getInfo());
 			}
 		}
 		else if(e.getTag().equalsIgnoreCase("ReportChannel")) {
@@ -98,10 +115,6 @@ public class SpigotConnector implements Listener {
 					ProxyServer.getInstance().getPlayer(staff).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error occured while trying to process the "
 							+ "report #" + id + "! The report has been probably processed by another staff member!")));
 				}
-			}
-			else if(subChannel.equals("UpdateReports")) {
-				String name = in.readUTF();
-				sendReports(ProxyServer.getInstance().getPlayer(name).getServer().getInfo());
 			}
 		}
 		else if(e.getTag().equalsIgnoreCase("QueueChannel")) {
@@ -161,8 +174,8 @@ public class SpigotConnector implements Listener {
 				String id = in.readUTF();
 				String jsonString;
 				Gson g = new Gson();
-				JsonObject answer = g.fromJson(in.readUTF(), JsonObject.class);
-				jsonString = answer.getAsString();
+				JsonArray answer = g.fromJson(in.readUTF(), JsonArray.class);
+				jsonString = answer.toString();
 				Feedback f = Main.getFeedback().getById(id);
 				f.answer(playerUuid, jsonString);
 			}
@@ -175,18 +188,22 @@ public class SpigotConnector implements Listener {
 	    out.writeUTF(playerName);
 	    out.writeUTF(f.getId());
 	    out.writeUTF(f.getTitle());
-	    JsonObject questions = new JsonObject();
-	    JsonObject answers = new JsonObject();
+	    JsonArray questions = new JsonArray();
+	    JsonArray answers = new JsonArray();
 	    for(Integer ss : f.getQuestions().keySet()) {
-		    questions.addProperty(String.valueOf(ss), f.getQuestions().get(ss));
+	    	JsonObject obj = new JsonObject();
+	    	obj.addProperty(String.valueOf(ss), f.getQuestions().get(ss));
+		    questions.add(obj);
 		    JsonArray a = new JsonArray();
 		    for(String answer : f.getOptions().get(ss)) {
 			    a.add(answer);
 		    }
-		    answers.add(String.valueOf(ss), a);
+	    	JsonObject ans = new JsonObject();
+	    	ans.add(String.valueOf(ss), a);
+		    answers.add(ans);
 	    }
-    	out.writeUTF(questions.getAsString());
-    	out.writeUTF(answers.getAsString());
+    	out.writeUTF(questions.toString());
+    	out.writeUTF(answers.toString());
 	    s.sendData("FeedbackChannel", out.toByteArray());
 	}
 	
@@ -214,44 +231,18 @@ public class SpigotConnector implements Listener {
 	    s.sendData("ManagerChannel", out.toByteArray());
 	}
 	
-	public static void sendReports(ServerInfo s) {
+	public static void sendPlayers(ServerInfo s) {
 	    ByteArrayDataOutput out = ByteStreams.newDataOutput();
-	    out.writeUTF("ReportsList");
-	    String reportedList = "";
-	    String reporterList = "";
-	    String reportedUuidList = "";
-	    String reporterUuidList = "";
-	    String reasonList = "";
-	    String timeReportedList = "";
-	    String idList = "";
-	    for(int i = 0; i < Report.reports.size(); i++) {
-	    	if(i + 1 == Report.reports.size()) {
-	    		reportedList = reportedList + Report.reports.get(i).getReportedName();
-	    		reporterList = reporterList + Report.reports.get(i).getReporterName();
-	    		reportedUuidList = reportedUuidList + Report.reports.get(i).getReportedUuid();
-	    		reporterUuidList = reporterUuidList + Report.reports.get(i).getReporterUuid();
-	    		reasonList = reasonList + Report.reports.get(i).getReason();
-	    		timeReportedList = timeReportedList + Report.reports.get(i).getTimeReported();
-	    		idList = idList + Report.reports.get(i).getId();
-	    	}
-	    	else {
-	    		reportedList = reportedList + Report.reports.get(i).getReportedName() + ", ";
-	    		reporterList = reporterList + Report.reports.get(i).getReporterName() + ", ";
-	    		reportedUuidList = reportedUuidList + Report.reports.get(i).getReportedUuid() + ", ";
-	    		reporterUuidList = reporterUuidList + Report.reports.get(i).getReporterUuid() + ", ";
-	    		reasonList = reasonList + Report.reports.get(i).getReason() + ", ";
-	    		timeReportedList = timeReportedList + Report.reports.get(i).getTimeReported() + ", ";
-	    		idList = idList + Report.reports.get(i).getId() + ", ";
-	    	}
+	    JsonArray json = new JsonArray();
+	    for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+	    	JsonObject j = new JsonObject();
+	    	j.addProperty("uuid", p.getUniqueId().toString());
+	    	j.addProperty("server", p.getServer().getInfo().getName());
+	    	json.add(j);
 	    }
-	    out.writeUTF(reportedList);
-	    out.writeUTF(reporterList);
-	    out.writeUTF(reportedUuidList);
-	    out.writeUTF(reporterUuidList);
-	    out.writeUTF(reasonList);
-	    out.writeUTF(timeReportedList);
-	    out.writeUTF(idList);
-	    s.sendData("ReportChannel", out.toByteArray());
+	    out.writeUTF("PlayerList");
+	    out.writeUTF(json.toString());
+	    s.sendData("BanChannel", out.toByteArray());
 	}
 	
 	public static void openBanMenu(ServerInfo s, String playerName, String target) {

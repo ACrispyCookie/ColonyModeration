@@ -146,7 +146,7 @@ public class Mute implements Listener {
 						|| e.getMessage().startsWith("/pm ") || e.getMessage().startsWith("/r ") || e.getMessage().startsWith("/reply ") || e.getMessage().startsWith("/tell ") || e.getMessage().startsWith("/whisper ") || e.getMessage().startsWith("/w ")) {
 					e.setCancelled(true);
 					p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
-							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + m.getReason() + "\n&r        &fUnmute in &5» &d" + Time.formatted(m.getMutedUntil() - System.currentTimeMillis()) + "\n&r        &fMuted by &5» &d" + m.getStaff() +
+							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + m.getReason() + "\n&r        &fUnmute in &5» &d" + Time.formatted((m.getMutedUntil() - System.currentTimeMillis())/1000) + "\n&r        &fMuted by &5» &d" + m.getStaff() +
 							"\n&r \n&f&m-------------------------------------")));
 				}
 			}

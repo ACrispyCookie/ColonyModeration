@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.colonymc.moderationsystem.spigot.BungeecordConnector;
-import net.colonymc.moderationsystem.spigot.Main;
+import net.colonymc.moderationsystem.spigot.Main.SERVER;
 
 public class QueueCommand implements CommandExecutor {
 	
@@ -15,17 +15,17 @@ public class QueueCommand implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if(sender instanceof Player) {
 			String servers = "";
-			for(int i = 0; i < Main.servers.size(); i++) {
-				if(i + 1 == Main.servers.size()) {
-					servers = servers + Main.servers.get(i);
+			for(int i = 1; i < SERVER.values().length; i++) {
+				if(i + 1 == SERVER.values().length) {
+					servers = servers + SERVER.values()[i];
 				}
 				else {
-					servers = servers + Main.servers.get(i) + ", ";
+					servers = servers + SERVER.values()[i] + ", ";
 				}
 			}
 			Player p = (Player) sender;
 			if(args.length == 1) {
-				if(Main.servers.contains(args[0])) {
+				if(SERVER.contains(args[0].toUpperCase())) {
 					BungeecordConnector.sendQueue(p, args[0]);
 				}
 				else {

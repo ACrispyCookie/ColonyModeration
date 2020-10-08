@@ -21,6 +21,7 @@ import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember.FIXED_TIME;
 import net.colonymc.moderationsystem.spigot.Main;
 
 public class AllStaffManagerMenu implements Listener, InventoryHolder {
@@ -73,9 +74,9 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 								"\n &5» &fLeft at: &d" + leaveTimestamp + 
 								"\n " +
 								"\n&d&nRatings:" + 
-								"\n &5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
-								"\n &5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
-								"\n &5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
+								"\n &5» &fDaily rating: &d" + b.calculateFixed(FIXED_TIME.DAILY) + 
+								"\n &5» &fWeekly rating: &d" + b.calculateFixed(FIXED_TIME.WEEKLY) + 
+								"\n &5» &fMonthly rating: &d" + b.calculateFixed(FIXED_TIME.MONTHLY) + 
 								"\n " +
 								(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&5» &d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
 								(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"

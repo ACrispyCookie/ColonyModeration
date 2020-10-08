@@ -16,7 +16,7 @@ public class StaffJoinListener implements Listener {
 				StaffMember.getByUuid(p.getUniqueId().toString()).login();
 			}
 			else {
-				new StaffMember(p.getUniqueId().toString(), true);
+				new StaffMember(p.getUniqueId().toString(), true, false);
 			}
 		}
 	}

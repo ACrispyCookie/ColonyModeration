@@ -2,6 +2,8 @@ package net.colonymc.moderationsystem.bungee.bans;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.Messages;
@@ -11,9 +13,25 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-public class UnbanCommand extends Command {
+public class UnbanCommand extends Command implements TabExecutor {
 
+	@Override
+	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+		Set<String> matches = new HashSet<>();
+		String search = args[0].toLowerCase();
+		for (Ban m : Ban.bans) {
+            if(m.getPlayerName().toLowerCase().startsWith(search.toLowerCase())) {
+        		matches.add(m.getPlayerName());
+            }
+            else if(m.getId().toLowerCase().startsWith(search.toLowerCase())) {
+            	matches.add(m.getId());
+            }
+		}
+		return matches;
+	}
+	
 	public UnbanCommand() {
 		super("unban");
 	}

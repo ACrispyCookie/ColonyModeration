@@ -18,6 +18,7 @@ import net.colonymc.moderationsystem.bungee.bans.Ban;
 import net.colonymc.moderationsystem.bungee.bans.BanCommand;
 import net.colonymc.moderationsystem.bungee.bans.CheckCommand;
 import net.colonymc.moderationsystem.bungee.bans.JoinListener;
+import net.colonymc.moderationsystem.bungee.bans.KickCommand;
 import net.colonymc.moderationsystem.bungee.bans.MassBanCommand;
 import net.colonymc.moderationsystem.bungee.bans.Mute;
 import net.colonymc.moderationsystem.bungee.bans.UnbanCommand;
@@ -243,6 +244,7 @@ public class Main extends Plugin {
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new McLinkCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new UnlinkCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new BanCommand());
+		ProxyServer.getInstance().getPluginManager().registerCommand(this, new KickCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new MassBanCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new UnbanCommand());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new UnmuteCommand());

@@ -3,6 +3,7 @@ package net.colonymc.moderationsystem.bungee.bans;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import net.colonymc.colonyapi.MainDatabase;
@@ -15,11 +16,11 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class MassPunishment {
 	
-	String[] target;
+	ArrayList<String> targetNames;
 	CommandSender staff;
 	ArrayList<Integer> timesMuted;
 	ArrayList<Integer> timesBanned;
-	ArrayList<String> targetUuid;
+	ArrayList<String> targetUuids;
 	ArrayList<String> targetIP;
 	ArrayList<Long> duration;
 	ArrayList<String> id;
@@ -27,10 +28,10 @@ public class MassPunishment {
 	String reason;
 	
 	public MassPunishment(String[] target, CommandSender staff, String reason, long duration, PunishmentType type) {
-		this.target = target;
+		this.targetUuids = (ArrayList<String>) Arrays.asList(target);
+		this.targetNames = targetNames();
 		this.staff = staff;
 		this.reason = reason;
-		this.targetUuid = targetUuids();
 		this.targetIP = targetIP();
 		this.timesBanned = timesBanned();
 		this.timesMuted = timesMuted();
@@ -53,32 +54,32 @@ public class MassPunishment {
 	public void execute() {
 		int banned = 0;
 		int muted = 0;
-		for(int i = 0; i < target.length; i++) {
+		for(int i = 0; i < targetNames.size(); i++) {
 			if(type.get(i) == PunishmentType.BAN) {
 				MainDatabase.sendStatement("INSERT INTO ActiveBans (uuid, bannedIp, staffUuid, reason, bannedUntil, issuedAt, ID) VALUES "
-						+ "('" + targetUuid.get(i) + "', '" + targetIP.get(i) + "', '" + 
+						+ "('" + targetUuids.get(i) + "', '" + targetIP.get(i) + "', '" + 
 						((ProxiedPlayer) staff).getUniqueId().toString() + "', '" + reason + "', " + 
 						((duration.get(i) == -1) ? duration.get(i) : (System.currentTimeMillis() + duration.get(i))) + ", " + System.currentTimeMillis() + ", '" + id + "');");
-				MainDatabase.sendStatement("UPDATE PlayerInfo SET timesBanned=" + (timesBanned.get(i) + 1) + " WHERE uuid='" + targetUuid.get(i) + "';");
-				if(ProxyServer.getInstance().getPlayer(target[i]) != null) {
-					ProxyServer.getInstance().getPlayer(target[i]).disconnect(getTextReason(i));
+				MainDatabase.sendStatement("UPDATE PlayerInfo SET timesBanned=" + (timesBanned.get(i) + 1) + " WHERE uuid='" + targetUuids.get(i) + "';");
+				if(ProxyServer.getInstance().getPlayer(targetNames.get(i)) != null) {
+					ProxyServer.getInstance().getPlayer(targetNames.get(i)).disconnect(getTextReason(i));
 				}
-				new Ban(target[i], targetUuid.get(i), targetIP.get(i), staff.getName(), ((ProxiedPlayer) staff).getUniqueId().toString(), reason, id.get(i),
+				new Ban(targetNames.get(i), targetUuids.get(i), targetIP.get(i), staff.getName(), ((ProxiedPlayer) staff).getUniqueId().toString(), reason, id.get(i),
 						((duration.get(i) == -1) ? duration.get(i) : System.currentTimeMillis() + duration.get(i)),
 						System.currentTimeMillis());
 				banned++;
 			}
 			else if(type.get(i) == PunishmentType.MUTE) {
 				MainDatabase.sendStatement("INSERT INTO ActiveMutes (uuid, staffUuid, reason, mutedUntil, issuedAt, ID) VALUES "
-						+ "('" + targetUuid.get(i) + "', '" + ((ProxiedPlayer) staff).getUniqueId().toString() + "', '" + reason + "', " + 
+						+ "('" + targetUuids.get(i) + "', '" + ((ProxiedPlayer) staff).getUniqueId().toString() + "', '" + reason + "', " + 
 						((duration.get(i) == -1) ? duration.get(i) : (System.currentTimeMillis() + duration.get(i))) + ", " + System.currentTimeMillis() + ", '" + id.get(i) + "');");
-				MainDatabase.sendStatement("UPDATE PlayerInfo SET timesMuted=" + (timesMuted.get(i) + 1) + " WHERE uuid='" + targetUuid.get(i) + "';");
-				if(ProxyServer.getInstance().getPlayer(target[i]) != null) {
-					ProxyServer.getInstance().getPlayer(target[i]).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
-							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + Time.formatted(duration.get(i)) + "\n&r        &fMuted by &5» &d" + staff.getName() +
+				MainDatabase.sendStatement("UPDATE PlayerInfo SET timesMuted=" + (timesMuted.get(i) + 1) + " WHERE uuid='" + targetUuids.get(i) + "';");
+				if(ProxyServer.getInstance().getPlayer(targetNames.get(i)) != null) {
+					ProxyServer.getInstance().getPlayer(targetNames.get(i)).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
+							" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + Time.formatted(duration.get(i)/1000) + "\n&r        &fMuted by &5» &d" + staff.getName() +
 							"\n \n&f&m-------------------------------------")));
 				}
-				new Mute(target[i], targetUuid.get(i), staff.getName(), ((ProxiedPlayer) staff).getUniqueId().toString(), reason, id.get(i),
+				new Mute(targetNames.get(i), targetUuids.get(i), staff.getName(), ((ProxiedPlayer) staff).getUniqueId().toString(), reason, id.get(i),
 						System.currentTimeMillis() + duration.get(i), System.currentTimeMillis());
 				muted++;
 			}
@@ -94,9 +95,9 @@ public class MassPunishment {
 		}
 	}
 
-	private ArrayList<String> targetUuids() {
+	private ArrayList<String> targetNames() {
 		ArrayList<String> uuids = new ArrayList<String>();
-		for(String s : target) {
+		for(String s : targetNames) {
 			uuids.add(MainDatabase.getUuid(s));
 		}
 		return uuids;
@@ -104,7 +105,7 @@ public class MassPunishment {
 	
 	private ArrayList<String> targetIP() {
 		ArrayList<String> ips = new ArrayList<String>();
-		for(String s : targetUuid) {
+		for(String s : targetUuids) {
 			ResultSet rs = MainDatabase.getResultSet("SELECT * FROM PlayerInfo WHERE uuid='" + s + "'");
 			try {
 				if(rs.next()) {
@@ -119,7 +120,7 @@ public class MassPunishment {
 	
 	private ArrayList<Integer> timesMuted() {
 		ArrayList<Integer> times = new ArrayList<Integer>();
-		for(String s : targetUuid) {
+		for(String s : targetUuids) {
 			ResultSet rs = MainDatabase.getResultSet("SELECT * FROM PlayerInfo WHERE uuid='" + s + "'");
 			try {
 				if(rs.next()) {
@@ -134,7 +135,7 @@ public class MassPunishment {
 	
 	private ArrayList<Integer> timesBanned() {
 		ArrayList<Integer> times = new ArrayList<Integer>();
-		for(String s : targetUuid) {
+		for(String s : targetUuids) {
 			ResultSet rs = MainDatabase.getResultSet("SELECT * FROM PlayerInfo WHERE uuid='" + s + "'");
 			try {
 				if(rs.next()) {
@@ -149,7 +150,7 @@ public class MassPunishment {
 
 	private ArrayList<Long> decideDurations() {
 		ArrayList<Long> durations = new ArrayList<Long>();
-		for(int i = 0; i < target.length; i++) {
+		for(int i = 0; i < targetNames.size(); i++) {
 			durations.add(decideDuration(type.get(i), timesBanned.get(i), timesMuted.get(i)));
 		}
 		return durations;
@@ -157,7 +158,7 @@ public class MassPunishment {
 	
 	private ArrayList<Long> getDurations(long duration) {
 		ArrayList<Long> durations = new ArrayList<Long>();
-		for(int i = 0; i < target.length; i++) {
+		for(int i = 0; i < targetNames.size(); i++) {
 			durations.add(duration);
 		}
 		return durations;
@@ -165,8 +166,8 @@ public class MassPunishment {
 	
 	private ArrayList<PunishmentType> decidePunishment() {
 		ArrayList<PunishmentType> punishments = new ArrayList<PunishmentType>();
-		for(int i = 0; i < target.length; i++) {
-			if(timesMuted.get(i) == 6 || reason.equals("Cheating - Hacking") || reason.equals("Bug Abusing") || reason.equals("§lAnticheat - Cheating")|| MainDatabase.isMuted(target[i])) {
+		for(int i = 0; i < targetNames.size(); i++) {
+			if(timesMuted.get(i) == 6 || reason.equals("Cheating - Hacking") || reason.equals("Bug Abusing") || reason.equals("§lAnticheat - Cheating")|| MainDatabase.isMuted(targetNames.get(i))) {
 				punishments.add(PunishmentType.BAN);
 			}
 			else {
@@ -178,7 +179,7 @@ public class MassPunishment {
 	
 	private ArrayList<PunishmentType> getTypes(PunishmentType t) {
 		ArrayList<PunishmentType> punishments = new ArrayList<PunishmentType>();
-		for(int i = 0; i < target.length; i++) {
+		for(int i = 0; i < targetNames.size(); i++) {
 			punishments.add(t);
 		}
 		return punishments;
@@ -187,7 +188,7 @@ public class MassPunishment {
 	private ArrayList<String> getBanID() {
 		String characters = "ABCDEFGHIJKLMNOPQRSTUVYXZ1234567890";
 		ArrayList<String> token = new ArrayList<String>();
-		for(int i = 0; i < target.length; i++) {
+		for(int i = 0; i < targetNames.size(); i++) {
 			for(int ii = 0; ii < 5; ii++) {
 				String t = "";
 				Random rand = new Random();
@@ -257,11 +258,11 @@ public class MassPunishment {
 		String finalreason;
 		if(duration.get(i) == -1) {
 			finalreason = "§5§lYour account has been \n§5§lpermanently suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration.get(i)/1000) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		else {
 			finalreason = "§5§lYour account has been \n§5§ltemporarily suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration.get(i)) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration.get(i)/1000) + "\n§fBan ID §5» §d#" + id.get(i) + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		return finalreason;
 	}

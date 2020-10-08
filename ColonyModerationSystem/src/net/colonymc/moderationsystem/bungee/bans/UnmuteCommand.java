@@ -24,7 +24,7 @@ public class UnmuteCommand extends Command implements TabExecutor {
 		String search = args[0].toLowerCase();
 		for (Mute m : Mute.mutes) {
 			ProxiedPlayer p = m.getPlayer();
-            if(p.getName().toLowerCase().startsWith(search)) {
+            if(p.getName().toLowerCase().startsWith(search.toLowerCase())) {
         		matches.add(p.getName());
             }
 		}

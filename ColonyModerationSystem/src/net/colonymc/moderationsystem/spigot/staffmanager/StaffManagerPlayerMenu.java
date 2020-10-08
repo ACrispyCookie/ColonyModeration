@@ -25,6 +25,7 @@ import net.colonymc.colonyapi.Time;
 import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.moderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember.FIXED_TIME;
 import net.colonymc.moderationsystem.spigot.Main;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback;
 import net.colonymc.moderationsystem.spigot.staffmanager.utils.Feedback.FEEDBACK_TYPE;
@@ -62,9 +63,9 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 				"\n &5» &fLeft at: &d" + leaveTimestamp + 
 				"\n " +
 				"\n&d&nRatings:" + 
-				"\n &5» &fDaily rating: &d" + b.calculateBetween(-1, System.currentTimeMillis()) + 
-				"\n &5» &fWeekly rating: &d" + b.calculateBetween(-2, System.currentTimeMillis()) + 
-				"\n &5» &fMonthly rating: &d" + b.calculateBetween(-3, System.currentTimeMillis()) + 
+				"\n &5» &fDaily rating: &d" + b.calculateFixed(FIXED_TIME.DAILY) + 
+				"\n &5» &fWeekly rating: &d" + b.calculateFixed(FIXED_TIME.WEEKLY) + 
+				"\n &5» &fMonthly rating: &d" + b.calculateFixed(FIXED_TIME.MONTHLY) + 
 				"\n " +
 				(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&d&nTitles:\n " + b.getFullTitles() + "\n " : "\n&5» &d&nTitles:\n " + b.getTitles() + "\n " : ""))
 				.build();
@@ -163,22 +164,22 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		monthly.set(Calendar.MILLISECOND, 0);
 		return new ItemStackBuilder(Material.BOOK).name("&dPunishments executed")
 				.lore("\n&d&nIngame punishments:"
-						+ "\n &5» &fDaily: &d" + b.getPunishments().size() 
+						+ "\n &5» &fDaily: &d" + b.getPunishmentsAfter(daily.getTimeInMillis()).size()
 						+ "\n &5» &fWeekly: &d" + b.getPunishmentsAfter(monthly.getTimeInMillis()).size() 
 						+ "\n &5» &fMonthly: &d" + b.getPunishmentsAfter(weekly.getTimeInMillis()).size() 
-						+ "\n &5» &fTotal: &d" + b.getPunishmentsAfter(daily.getTimeInMillis()).size()
+						+ "\n &5» &fTotal: &d" + b.getPunishments().size() 
 						+ "\n "
 						+ "\n&d&nDiscord punishments:"
-						+ "\n &5» &fDaily: &d" + b.getDiscordPunishments().size() 
+						+ "\n &5» &fDaily: &d" + b.getDiscordPunishmentsAfter(daily.getTimeInMillis()).size()
 						+ "\n &5» &fWeekly: &d" + b.getDiscordPunishmentsAfter(monthly.getTimeInMillis()).size() 
 						+ "\n &5» &fMonthly: &d" + b.getDiscordPunishmentsAfter(weekly.getTimeInMillis()).size() 
-						+ "\n &5» &fTotal: &d" + b.getDiscordPunishmentsAfter(daily.getTimeInMillis()).size() 
+						+ "\n &5» &fTotal: &d" + b.getDiscordPunishments().size()
 						+ "\n "
 						+ "\n&d&nIngame reports closed:"
-						+ "\n &5» &fDaily: &d" + b.getReports().size() 
+						+ "\n &5» &fDaily: &d" + b.getReportsAfter(daily.getTimeInMillis()).size()
 						+ "\n &5» &fWeekly: &d" + b.getReportsAfter(monthly.getTimeInMillis()).size() 
 						+ "\n &5» &fMonthly: &d" + b.getReportsAfter(weekly.getTimeInMillis()).size() 
-						+ "\n &5» &fTotal: &d" + b.getReportsAfter(daily.getTimeInMillis()).size())
+						+ "\n &5» &fTotal: &d" + b.getReports().size())
 				.build();
 	}
 
@@ -215,7 +216,7 @@ public class StaffManagerPlayerMenu implements Listener, InventoryHolder {
 		m.set(Calendar.MILLISECOND, 0);
 		Calendar lM = Calendar.getInstance();
 		lM.set(Calendar.DAY_OF_MONTH, 0);
-		lM.set(Calendar.MONTH, lW.get(Calendar.MONTH) - 1);
+		lM.add(Calendar.MONTH, -1);
 		lM.set(Calendar.HOUR_OF_DAY, 0);
 		lM.set(Calendar.MINUTE, 0);
 		lM.set(Calendar.SECOND, 0);

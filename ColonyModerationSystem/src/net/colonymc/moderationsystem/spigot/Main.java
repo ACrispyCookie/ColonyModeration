@@ -1,10 +1,7 @@
 package net.colonymc.moderationsystem.spigot;
 
-import java.util.ArrayList;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.colonyapi.MainDatabase;
@@ -12,6 +9,7 @@ import net.colonymc.moderationsystem.spigot.bans.ChooseDurationMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChoosePlayerMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseReasonMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseTypeMenu;
+import net.colonymc.moderationsystem.spigot.bans.MenuPlayer;
 import net.colonymc.moderationsystem.spigot.bans.SignGUI;
 import net.colonymc.moderationsystem.spigot.queue.LeaveQueueCommand;
 import net.colonymc.moderationsystem.spigot.queue.QueueCommand;
@@ -37,18 +35,38 @@ public class Main extends JavaPlugin {
 	private static SignGUI signGui;
 	private LuckPerms luckPerms;
 	private BukkitTask reportUpdate;
-	public static final ArrayList<String> servers = new ArrayList<String>();
 	boolean started = false;
 	
+	public enum SERVER {
+		ALL("ALL"),
+		SKYBLOCK("skyblock"),
+		LOBBY("lobby");
+		
+		String name;
+		SERVER(String name){
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public static boolean contains(String c) {
+			for(SERVER s : values()) {
+				if(s.name().equals(c)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	
 	public void onEnable() {
-		servers.add("skyblock");
-		servers.add("lobby");
 		setInstance(this);
 		if(MainDatabase.isConnected()) {
 			signGui = new SignGUI(this);
 			luckPerms = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
 			setupOtherClasses();
-			startReportsUpdating();
 			started = true;
 			System.out.println("[ColonyModerationSystem] » has been enabled successfully!");
 		}
@@ -69,8 +87,9 @@ public class Main extends JavaPlugin {
 	
 	private void setupOtherClasses() {
 		//setup for plugin channels
-		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-		this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new ChoosePlayerMenu());
+		new Report();
+		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BanChannel");
+		this.getServer().getMessenger().registerIncomingPluginChannel(this, "BanChannel", new MenuPlayer());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "ReportChannel");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "ReportChannel", new BungeecordConnector());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BanChannel");
@@ -84,7 +103,6 @@ public class Main extends JavaPlugin {
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "FeedbackChannel");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "FeedbackChannel", new BungeecordConnector());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "QueueChannel");
-		this.getServer().getPluginManager().registerEvents(new SpigotDatabaseListener(), this);
 		this.getServer().getPluginManager().registerEvents(new ChoosePlayerMenu(), this);
 		this.getServer().getPluginManager().registerEvents(new ChooseReasonMenu(), this);
 		this.getServer().getPluginManager().registerEvents(new ChooseDurationMenu(), this);
@@ -104,16 +122,6 @@ public class Main extends JavaPlugin {
 		this.getServer().getPluginManager().registerEvents(new SearchStaffMenu(), this);
 		this.getCommand("queue").setExecutor(new QueueCommand());
 		this.getCommand("leavequeue").setExecutor(new LeaveQueueCommand());
-	}
-	
-	public void startReportsUpdating() {
-		reportUpdate = new BukkitRunnable() {
-			@Override
-			public void run() {
-				Report.updateReports();
-				Report.updateArchivedReports();
-			}
-		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 10);
 	}
 	
 	public static Main getInstance() {

@@ -21,37 +21,36 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 
 import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.bans.PunishmentType;
-import net.colonymc.moderationsystem.spigot.BungeecordConnector;
 import net.colonymc.moderationsystem.spigot.Main;
+import net.colonymc.moderationsystem.spigot.Main.SERVER;
+import net.colonymc.moderationsystem.spigot.bans.SignGUI.SignGUIListener;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.model.user.UserManager;
 
-public class ChoosePlayerMenu implements Listener,PluginMessageListener,InventoryHolder {
+public class ChoosePlayerMenu implements Listener,InventoryHolder {
 	
+	final int BACK_BUTTON = 51;
+	final int NEXT_BUTTON = 53;
+	final int SELECT_BUTTON = 49;
+	final int SELECT_OFFLINE = 48;
 	Inventory inv;
 	Player p;
 	BukkitTask update;
 	BukkitTask cancel;
-	String serverSelected;
-	boolean selectMultiple;
+	SERVER serverSelected;
 	PunishmentType type;
+	boolean selectMultiple;
 	int page = 0;
 	int totalPages;
-	String[] serverNames = new String[] {"skyblock", "lobby"};
-	HashMap<Integer, String> players = new HashMap<Integer, String>();
-	ArrayList<String> selectedPlayers = new ArrayList<String>();
-	public static HashMap<String, ArrayList<String>> servers = new HashMap<String, ArrayList<String>>();
+	HashMap<Integer, MenuPlayer> players = new HashMap<Integer, MenuPlayer>();
+	ArrayList<MenuPlayer> selectedPlayers = new ArrayList<MenuPlayer>();
 	
 	public ChoosePlayerMenu(Player p, PunishmentType type, boolean selectMultiple) {
 		this.p = p;
@@ -63,7 +62,8 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 		else {
 			this.inv = Bukkit.createInventory(this, 54, "Select a player...");
 		}
-		this.serverSelected = "ALL";
+		this.serverSelected = SERVER.ALL;
+		MenuPlayer.forceLoad();
 		fillInventory();
 		openInventory();
 		update = startUpdating();
@@ -80,7 +80,7 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 	}
 	
 	private void fillInventory() {
-		for(int i = 46 + servers.keySet().size(); i < 54; i++) {
+		for(int i = 48; i < 54; i++) {
 			inv.setItem(i, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
 					.durability((short) 2)
 					.build());
@@ -103,54 +103,48 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 	}
 
 	private void changePage(int amount) {
-		ArrayList<String> allPlayers = new ArrayList<String>();
-		if(serverSelected.equals("ALL")) {
-			if(servers.get("skyblock") != null && !servers.get("skyblock").isEmpty()) {
-				allPlayers.addAll(servers.get("skyblock"));
-			}
-			if(servers.get("lobby") != null && !servers.get("lobby").isEmpty()) {
-				allPlayers.addAll(servers.get("lobby"));
-			}
-		}
-		else if(serverSelected.equals("skyblock")) {
-			if(servers.get("skyblock") != null && !servers.get("skyblock").isEmpty()) {
-				allPlayers.addAll(servers.get("skyblock"));
+		ArrayList<MenuPlayer> listToUse = 
+				(serverSelected == SERVER.ALL ? MenuPlayer.getOnlinePlayers() : MenuPlayer.getPlayersOn(serverSelected));
+		listToUse.remove(MenuPlayer.getByUuid(p.getUniqueId().toString()));
+		if(selectMultiple) {
+			for(MenuPlayer m : selectedPlayers) {
+				if(!listToUse.contains(m)) {
+					listToUse.add(m);
+				}
 			}
 		}
-		else if(serverSelected.equals("lobby")) {
-			if(servers.get("lobby") != null && !servers.get("lobby").isEmpty()) {
-				allPlayers.addAll(servers.get("lobby"));
-			}
-		}
-		for(int i = 0; i < allPlayers.size(); i++) {
-			if(p.getName().equals(allPlayers.get(i))) {
-				allPlayers.remove(i);
-			}
-		}
-		totalPages = (int) Math.ceil((double) allPlayers.size() / 45);
+		totalPages = (int) Math.ceil((double) listToUse.size() / 45);
 		page = page + amount;
 		int index = page * 45;
 		for(int i = 0; i < 45; i++) {
-			if(allPlayers.size() > index) {
+			if(listToUse.size() > index) {
+				MenuPlayer pl = listToUse.get(index);
 				if(selectMultiple) {
 					inv.setItem(i, new SkullItemBuilder()
-							.playerUuid(UUID.fromString(MainDatabase.getUuid(allPlayers.get(index))))
-							.name("&d" + allPlayers.get(index))
-							.lore("\n&fPlayer's UUID: &d" + MainDatabase.getUuid(allPlayers.get(index)) + 
-									"\n&fPlayer's IP: &d" + MainDatabase.getLastIp(allPlayers.get(index)) + "\n&fTimes Banned: &d" + MainDatabase.getTimesBanned(allPlayers.get(index)) + 
-									"\n&fTimes Muted: &d" + MainDatabase.getTimesMuted(allPlayers.get(index)) + ((selectedPlayers.contains(allPlayers.get(index)) ? "\n\n&aSelected!" : "")))
+							.playerUuid(UUID.fromString(pl.getUuid()))
+							.name("&d" + pl.getName())
+							.lore("\n&fPlayer's UUID: &d" + pl.getUuid() 
+									+ "\n&fPlayer's IP: &d" + pl.getIp() 
+									+ "\n&fTimes Banned: &d" + pl.getTimesBanned()
+									+ "\n&fTimes Muted: &d" + pl.getTimesMuted()
+									+ "\n&fStatus: " + (pl.isOnline() ? "&aOnline" : "&cOffline")
+									+ "\n&fServer: &d" + (pl.getServer() == null ? "None" : pl.getServer().getName())
+									+ ((selectedPlayers.contains(pl) ? "\n\n&aSelected!" : "")))
 							.build());
 				}
 				else {
 					inv.setItem(i, new SkullItemBuilder()
-							.playerUuid(UUID.fromString(MainDatabase.getUuid(allPlayers.get(index))))
-							.name("&d" + allPlayers.get(index))
-							.lore("\n&fPlayer's UUID: &d" + MainDatabase.getUuid(allPlayers.get(index)) + 
-									"\n&fPlayer's IP: &d" + MainDatabase.getLastIp(allPlayers.get(index)) + "\n&fTimes Banned: &d" + MainDatabase.getTimesBanned(allPlayers.get(index)) + 
-									"\n&fTimes Muted: &d" + MainDatabase.getTimesMuted(allPlayers.get(index)))
+							.playerUuid(UUID.fromString(pl.getUuid()))
+							.name("&d" + pl.getName())
+							.lore("\n&fPlayer's UUID: &d" + pl.getUuid() 
+									+ "\n&fPlayer's IP: &d" + pl.getIp()
+									+ "\n&fTimes Banned: &d" + pl.getTimesBanned()
+									+ "\n&fTimes Muted: &d" + pl.getTimesMuted()
+									+ "\n&fStatus: " + (pl.isOnline() ? "&aOnline" : "&cOffline")
+									+ "\n&fServer: &d" + (pl.getServer() == null ? "None" : pl.getServer().getName()))
 							.build());
 				}
-				players.put(i, allPlayers.get(index));
+				players.put(i, listToUse.get(index));
 			}
 			else {
 				inv.setItem(i, new ItemStack(Material.AIR));
@@ -158,28 +152,28 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 			index++;
 		}
 		if(page > 0) {
-			inv.setItem(48, new ItemStackBuilder(Material.ARROW).name("&dPrevious Page").build());
+			inv.setItem(BACK_BUTTON, new ItemStackBuilder(Material.ARROW).name("&dPrevious Page").build());
 		}
 		else {
-			inv.setItem(48, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
+			inv.setItem(BACK_BUTTON, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
 		}
 		if(page + 1 < totalPages) {
-			inv.setItem(51, new ItemStackBuilder(Material.ARROW).name("&dNext Page").build());
+			inv.setItem(NEXT_BUTTON, new ItemStackBuilder(Material.ARROW).name("&dNext Page").build());
 		}
 		else {
-			inv.setItem(51, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
+			inv.setItem(NEXT_BUTTON, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
 		}
 		if(selectMultiple) {
 			if(selectedPlayers.size() > 0) {
 				if(selectedPlayers.size() == 1) {
-					inv.setItem(53, new ItemStackBuilder(Material.EMERALD_BLOCK)
+					inv.setItem(SELECT_BUTTON, new ItemStackBuilder(Material.EMERALD_BLOCK)
 							.name("&dSelect " + selectedPlayers.size() + " player")
 							.lore("\n&fClick here to select &d" + selectedPlayers.size() + " &fplayer!")
 							.glint(true)
 							.build());
 				}
 				else {
-					inv.setItem(53, new ItemStackBuilder(Material.EMERALD_BLOCK)
+					inv.setItem(SELECT_BUTTON, new ItemStackBuilder(Material.EMERALD_BLOCK)
 							.name("&dSelect " + selectedPlayers.size() + " players")
 							.lore("\n&fClick here to select &d" + selectedPlayers.size() + " &fplayers!")
 							.glint(true)
@@ -187,8 +181,14 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 				}
 			}
 			else {
-				inv.setItem(53, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
+				inv.setItem(SELECT_BUTTON, new ItemStackBuilder(Material.STAINED_GLASS_PANE).durability((short) 2).build());
 			}
+		}
+		if(selectMultiple) {
+			inv.setItem(SELECT_OFFLINE, new ItemStackBuilder(Material.SIGN).name("&dAdd offline player").build());
+		}
+		else {
+			inv.setItem(SELECT_OFFLINE, new ItemStackBuilder(Material.SIGN).name("&dSelect offline player").build());
 		}
 	}
 	
@@ -196,10 +196,57 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 		return new BukkitRunnable() {
 			@Override
 			public void run() {
-				updateServers();
 				changePage(0);
 			}
 		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 1);
+	}
+	
+	private void addPlayer(MenuPlayer pl) {
+		if(selectMultiple) {
+			if(!selectedPlayers.contains(pl)) {
+				if(canBan(pl) == 1) {
+					if(type != PunishmentType.MUTE || !MainDatabase.isMuted(pl.getName())) {
+						selectedPlayers.add(pl);
+						p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
+						p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fYou added &d" + pl.getName() + " &fto the list!"));
+					}
+					else {
+						p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
+						p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player is already muted!"));
+					}
+				}
+				else if(canBan(pl) == 0) {
+					p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou cannot punish this player!"));
+				}
+				else {
+					p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
+					p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error has occured please try again!"));
+				}
+			}
+			else {
+				selectedPlayers.remove(pl);
+				p.playSound(p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fYou removed &d" + pl.getName() + " &ffrom the list!"));
+			}
+		}
+	}
+	
+	private void select(MenuPlayer pl) {
+		if(!selectMultiple) {
+			if(canBan(pl) == 1) {
+				p.closeInventory();
+				new ChooseReasonMenu(p, pl, -1);
+			}
+			else if(canBan(pl) == 0) {
+				p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou cannot punish this player!"));
+			}
+			else {
+				p.playSound(p.getLocation(), Sound.NOTE_BASS, 2, 1);
+				p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error has occured please try again!"));
+			}
+		}
 	}
 	
 	public void openInventory() {
@@ -207,6 +254,7 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 			@Override
 			public void run() {
 				p.openInventory(inv);
+				startUpdating();
 			}
 		}.runTaskLaterAsynchronously(Main.getInstance(), 1);
 	}
@@ -232,79 +280,83 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 				}.runTaskLaterAsynchronously(Main.getInstance(), 2400);
 				if(menu.players.containsKey(e.getSlot())) {
 					if(menu.selectMultiple) {
-						if(!menu.selectedPlayers.contains(menu.players.get(e.getSlot()))) {
-							if(menu.canBan(menu.players.get(e.getSlot())) == 1) {
-								if(menu.type != PunishmentType.MUTE || !MainDatabase.isMuted(menu.players.get(e.getSlot()))) {
-									menu.selectedPlayers.add(menu.players.get(e.getSlot()));
-									menu.p.playSound(menu.p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
-									menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fYou added &d" + menu.players.get(e.getSlot()) + " &fto the list!"));
-								}
-								else {
-									menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
-									menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player is already muted!"));
-								}
-							}
-							else if(menu.canBan(menu.players.get(e.getSlot())) == 0) {
-								menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
-								menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou cannot punish this player!"));
-							}
-							else {
-								menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
-								menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error has occured please try again!"));
-							}
-						}
-						else {
-							menu.selectedPlayers.remove(menu.selectedPlayers.indexOf(menu.players.get(e.getSlot())));
-							menu.p.playSound(menu.p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
-							menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fYou removed &d" + menu.players.get(e.getSlot()) + " &ffrom the list!"));
-						}
+						menu.addPlayer(menu.players.get(e.getSlot()));
 					}
 					else {
-						if(menu.canBan(menu.players.get(e.getSlot())) == 1) {
-							String playerName = menu.players.get(e.getSlot());
-							menu.p.closeInventory();
-							new ChooseReasonMenu(menu.p, playerName, -1);
-						}
-						else if(menu.canBan(menu.players.get(e.getSlot())) == 0) {
-							menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
-							menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou cannot punish this player!"));
-						}
-						else {
-							menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
-							menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cAn error has occured please try again!"));
-						}
+						menu.select(menu.players.get(e.getSlot()));
 					}
 				}
-				else if(e.getSlot() == 52) {
+				else if(e.getSlot() == NEXT_BUTTON) {
 					if(menu.page + 1 < menu.totalPages) {
 						menu.changePage(1);
 					}
 				}
-				else if(e.getSlot() == 49) {
+				else if(e.getSlot() == BACK_BUTTON) {
 					if(menu.page > 0) {
 						menu.changePage(-1);
 					}
 				}
 				else if(e.getSlot() == 45) {
-					menu.serverSelected = "ALL";
+					menu.serverSelected = SERVER.ALL;
 					menu.p.playSound(menu.p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
 					menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fNow viewing players on &dthe whole network&f!"));
 				}
 				else if(e.getSlot() == 46) {
-					menu.serverSelected = "lobby";
+					menu.serverSelected = SERVER.LOBBY;
 					menu.p.playSound(menu.p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
 					menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fNow viewing players on &dthe lobby server&f!"));
 				}
 				else if(e.getSlot() == 47) {
-					menu.serverSelected = "skyblock";
+					menu.serverSelected = SERVER.SKYBLOCK;
 					menu.p.playSound(menu.p.getLocation(), Sound.CHICKEN_EGG_POP, 2, 1);
 					menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fNow viewing players on &dthe skyblock server&f!"));
 				}
-				else if(e.getSlot() == 53) {
+				else if(e.getSlot() == SELECT_BUTTON) {
 					if(menu.selectMultiple && menu.selectedPlayers.size() > 0) {
 						menu.p.closeInventory();
 						new ChooseReasonMenu(menu.p, menu.selectedPlayers, menu.type);
 					}
+				}
+				else if(e.getSlot() == SELECT_OFFLINE) {
+					menu.p.closeInventory();
+					Main.getSignGui().open(menu.p, new String[] {"", "^^^^^^^^^^^^^^^", "Enter the name", "of the player"}, new SignGUIListener() {
+						@Override
+						public void onSignDone(Player player, String[] lines) {
+							String msg = lines[0].replaceAll("\"", "");
+							if(!msg.isEmpty()) {
+								if(menu.selectMultiple) {
+									String uuid = MainDatabase.getUuid(msg);
+									if(!uuid.equals("Not Found")) {
+										MenuPlayer p = MenuPlayer.load(uuid);
+										menu.addPlayer(p);
+										menu.openInventory();
+									}
+									else {
+										menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cWe couldn't find this player!"));
+										menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
+										menu.openInventory();
+									}
+								}
+								else {
+									String uuid = MainDatabase.getUuid(msg);
+									if(!uuid.equals("Not Found")) {
+										MenuPlayer p = MenuPlayer.load(uuid);
+										menu.select(p);
+									}
+									else {
+										menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cWe couldn't find this player!"));
+										menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
+										menu.openInventory();
+									}
+								}
+							}
+							else {
+								menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou didn't enter a name!"));
+								menu.p.playSound(menu.p.getLocation(), Sound.NOTE_BASS, 2, 1);
+								menu.openInventory();
+							}
+						}
+					});
 				}
 			}
 		}
@@ -319,9 +371,9 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 		}
 	}
 	
-	public int canBan(String name) {
+	public int canBan(MenuPlayer player) {
 	    UserManager userManager = Main.getInstance().getLuckPerms().getUserManager();
-	    CompletableFuture<User> userFuture = userManager.loadUser(UUID.fromString(MainDatabase.getUuid(name)));
+	    CompletableFuture<User> userFuture = userManager.loadUser(UUID.fromString(player.getUuid()));
 	    User user;
 		try {
 			user = userFuture.get(1, TimeUnit.SECONDS);
@@ -335,34 +387,6 @@ public class ChoosePlayerMenu implements Listener,PluginMessageListener,Inventor
 			e.printStackTrace();
 		}
 		return -1;
-	}
-	
-	public void updateServers() {
-		for(String s : serverNames) {
-			BungeecordConnector.servers(p, s);
-		}
-	}
-
-	@Override
-	public void onPluginMessageReceived(String channel, Player p, byte[] data) {
-		ByteArrayDataInput in = ByteStreams.newDataInput(data);
-		String subchannel = in.readUTF();
-		if(channel.equals("BungeeCord")) {
-			if(subchannel.equals("PlayerList")) {
-				String server = in.readUTF();
-				String[] playerList = in.readUTF().split(", ");
-				ArrayList<String> players = new ArrayList<String>();
-				for(String s : playerList) {
-					players.add(s);
-				}
-				if(playerList.length == 1 && playerList[0].equals("")) {
-					servers.put(server, new ArrayList<String>());
-				}
-				else {
-					servers.put(server, players);
-				}
-			}
-		}
 	}
 
 }

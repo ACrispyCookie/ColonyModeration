@@ -1,5 +1,6 @@
 package net.colonymc.moderationsystem.bungee.bans;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,11 +16,24 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-public class BanCommand extends Command {
+public class BanCommand extends Command implements TabExecutor  {
 
 	public BanCommand() {
 		super("ban", "", new String[]{"tempban", "mute", "tempmute", "ipban", "banip"});
+	}
+
+	@Override
+	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+		if(args.length == 1) {
+			ArrayList<String> names = new ArrayList<String>();
+			for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+				names.add(p.getName());
+			}
+			return names;
+		}
+		return null;
 	}
 
 	@Override
@@ -42,7 +56,7 @@ public class BanCommand extends Command {
 								    CompletableFuture<User> userFuture = userManager.loadUser(UUID.fromString(MainDatabase.getUuid(args[0])));
 								    userFuture.thenAcceptAsync(user -> {
 								    	if(p.hasPermission("*") || (!user.getPrimaryGroup().equals("admin") && !user.getPrimaryGroup().equals("manager") && !user.getPrimaryGroup().equals("owner"))) {
-											SpigotConnector.openBanMenu(p.getServer().getInfo(), p.getName(), args[0]);
+											SpigotConnector.openBanMenu(p.getServer().getInfo(), p.getName(), MainDatabase.getUuid(args[0]));
 										}
 										else {
 											p.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cYou cannot punish this player!")));

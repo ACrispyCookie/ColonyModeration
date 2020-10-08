@@ -20,9 +20,11 @@ public class StaffMember {
 	boolean online;
 	static ArrayList<StaffMember> staff = new ArrayList<StaffMember>();
 	
-	public StaffMember(String uuid, boolean online) {
+	public StaffMember(String uuid, boolean online, boolean firstTime) {
 		this.uuid = uuid;
-		this.rank = decideRank();
+		if(!firstTime) {
+			this.rank = decideRank();
+		}
 		this.online = online;
 		if(online) {
 			joinTimestamp = System.currentTimeMillis();
@@ -164,7 +166,7 @@ public class StaffMember {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			StaffMember m = new StaffMember(uuid, (ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)) != null));
+			StaffMember m = new StaffMember(uuid, (ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)) != null), true);
 			m.promote(rank, staff);
 			return m;
 		}
@@ -175,7 +177,7 @@ public class StaffMember {
 		ResultSet rs = MainDatabase.getResultSet("SELECT * FROM StaffInfo WHERE uuid='" + uuid + "' AND leaveTimestamp=0;");
 		try {
 			if(rs.next()) {
-				return new StaffMember(uuid, false);
+				return new StaffMember(uuid, false, false);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

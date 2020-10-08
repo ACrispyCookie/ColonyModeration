@@ -23,6 +23,7 @@ import net.colonymc.moderationsystem.bungee.staffmanager.StaffAction;
 import net.colonymc.moderationsystem.spigot.bans.ChoosePlayerMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseReasonMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseTypeMenu;
+import net.colonymc.moderationsystem.spigot.bans.MenuPlayer;
 import net.colonymc.moderationsystem.spigot.feedback.BFeedback;
 import net.colonymc.moderationsystem.spigot.reports.ArchivedReportsMenu;
 import net.colonymc.moderationsystem.spigot.reports.ReportMenu;
@@ -51,7 +52,8 @@ public class BungeecordConnector implements PluginMessageListener {
 					new ChoosePlayerMenu(Bukkit.getPlayerExact(playerName), null, false);
 				}
 				else {
-					new ChooseReasonMenu(Bukkit.getPlayerExact(playerName), target, -1);
+					MenuPlayer.load(target);
+					new ChooseReasonMenu(Bukkit.getPlayerExact(playerName), MenuPlayer.getByUuid(target), -1);
 				}
 			}
 			if(subchannel.equals("MassBanMenu")) {
@@ -125,15 +127,15 @@ public class BungeecordConnector implements PluginMessageListener {
 				HashMap<Integer, String> questions = new HashMap<Integer, String>();
 				HashMap<Integer, String[]> options = new HashMap<Integer, String[]>();
 				Gson g = new Gson();
-				JsonObject jq = g.fromJson(jsonQuestion, JsonObject.class);
-				JsonObject ja = g.fromJson(jsonAnswer, JsonObject.class);
+				JsonArray jq = g.fromJson(jsonQuestion, JsonArray.class);
+				JsonArray ja = g.fromJson(jsonAnswer, JsonArray.class);
 				for(int i = 0; i < jq.size(); i++) {
-					JsonArray jr = ja.get(String.valueOf(i)).getAsJsonArray();
+					JsonArray jr = ja.get(i).getAsJsonObject().get(String.valueOf(i)).getAsJsonArray();
 					String[] responses = new String[jr.size()];
 					for(int c = 0; c < jr.size(); c++) {
 						responses[c] = jr.get(c).getAsString();
 					}
-					questions.put(i, jq.get(String.valueOf(i)).getAsString());
+					questions.put(i, jq.get(i).getAsJsonObject().get(String.valueOf(i)).getAsString());
 					options.put(i, responses);
 				}
 				BFeedback f = new BFeedback(id, title, questions, options, Bukkit.getPlayerExact(playerName));
@@ -149,11 +151,13 @@ public class BungeecordConnector implements PluginMessageListener {
 			out.writeUTF("AnswerQuestion");
 			out.writeUTF(p.getUniqueId().toString());
 			out.writeUTF(id);
-			JsonObject j = new JsonObject();
+			JsonArray j = new JsonArray();
 			for(Integer i : answers.keySet()) {
-				j.addProperty(String.valueOf(i), answers.get(i));
+				JsonObject obj = new JsonObject();
+				obj.addProperty(String.valueOf(i), answers.get(i));
+				j.add(obj);
 			}
-			out.writeUTF(j.getAsString());
+			out.writeUTF(j.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -227,24 +231,24 @@ public class BungeecordConnector implements PluginMessageListener {
 		p.sendPluginMessage(Main.getInstance(), "QueueChannel", bytes.toByteArray());
 	}
 	
-	public static void servers(Player staffMember, String server) {
+	public static void requestPlayers(Player staffMember) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(bytes);
 		try {
 			out.writeUTF("PlayerList");
-			out.writeUTF(server);
+			out.writeUTF(staffMember.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		staffMember.sendPluginMessage(Main.getInstance(), "BungeeCord", bytes.toByteArray());
+		staffMember.sendPluginMessage(Main.getInstance(), "BanChannel", bytes.toByteArray());
 	}
 	
-	public static void sendPunishment(String playerName, Player staffMember, String reason, int reportId) {
+	public static void sendPunishment(String playerUuid, Player staffMember, String reason, int reportId) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(bytes);
 		try {
 			out.writeUTF("Punish");
-			out.writeUTF(playerName);
+			out.writeUTF(playerUuid);
 			out.writeUTF(staffMember.getName());
 			out.writeUTF(reason);
 			out.writeInt(reportId);
@@ -254,12 +258,12 @@ public class BungeecordConnector implements PluginMessageListener {
 		staffMember.sendPluginMessage(Main.getInstance(), "BanChannel", bytes.toByteArray());
 	}
 	
-	public static void sendPunishment(String playerName, Player staffMember, String reason, long duration, PunishmentType type, int reportId) {
+	public static void sendPunishment(String playerUuid, Player staffMember, String reason, long duration, PunishmentType type, int reportId) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(bytes);
 		try {
 			out.writeUTF("CustomPunish");
-			out.writeUTF(playerName);
+			out.writeUTF(playerUuid);
 			out.writeUTF(staffMember.getName());
 			out.writeUTF(reason);
 			out.writeLong(duration);
@@ -271,17 +275,17 @@ public class BungeecordConnector implements PluginMessageListener {
 		staffMember.sendPluginMessage(Main.getInstance(), "BanChannel", bytes.toByteArray());
 	}
 	
-	public static void sendPunishment(ArrayList<String> playerNames, Player staffMember, String reason, long duration, PunishmentType type) {
+	public static void sendPunishment(ArrayList<String> playerUuids, Player staffMember, String reason, long duration, PunishmentType type) {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(bytes);
 		try {
 			String names = "";
-			for(int i= 0; i < playerNames.size(); i++) {
-				if(i + 1 == playerNames.size()) {
-					names = names + playerNames.get(i);
+			for(int i= 0; i < playerUuids.size(); i++) {
+				if(i + 1 == playerUuids.size()) {
+					names = names + playerUuids.get(i);
 				}
 				else {
-					names = names + playerNames.get(i) + ",";
+					names = names + playerUuids.get(i) + ",";
 				}
 			}
 			out.writeUTF("MassPunish");

@@ -29,10 +29,10 @@ public class Punishment {
 	int reportId;
 	
 	public Punishment(String target, CommandSender staff, String reason, int reportId) {
-		this.target = target;
+		this.targetUuid = target;
+		this.target = MainDatabase.getName(target);
 		this.staff = staff;
 		this.reason = reason;
-		this.targetUuid = MainDatabase.getUuid(target);
 		this.targetIP = targetIP();
 		this.timesBanned = timesBanned();
 		this.timesMuted = timesMuted();
@@ -43,10 +43,10 @@ public class Punishment {
 	}
 	
 	public Punishment(String target, CommandSender staff, String reason, long duration, PunishmentType type, int reportId) {
-		this.target = target;
+		this.targetUuid = target;
+		this.target = MainDatabase.getName(target);
 		this.staff = staff;
 		this.reason = reason;
-		this.targetUuid = MainDatabase.getUuid(target);
 		this.targetIP = targetIP();
 		this.timesBanned = timesBanned();
 		this.timesMuted = timesMuted();
@@ -96,7 +96,7 @@ public class Punishment {
 			ProxyServer.getInstance().broadcast(new TextComponent(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fThe player &d" + target + " &fhas been muted for &d" + reason +  "&f!\n")));
 			if(ProxyServer.getInstance().getPlayer(target) != null) {
 				ProxyServer.getInstance().getPlayer(target).sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m-------------------------------------\n&r \n&r      &5&lYou" + 
-						" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + Time.formatted(duration) + "\n&r        &fMuted by &5» &d" + staff.getName() +
+						" are temporarily muted!\n&r \n&r        &fReason &5» &d" + reason + "\n&r        &fUnmute in &5» &d" + Time.formatted(duration/1000) + "\n&r        &fMuted by &5» &d" + staff.getName() +
 						"\n \n&f&m-------------------------------------")));
 			}
 			new Mute(target, targetUuid, staff.getName(), (staff instanceof ProxiedPlayer ? ((ProxiedPlayer) staff).getUniqueId().toString() : staff.getName()), reason, id, 
@@ -224,11 +224,11 @@ public class Punishment {
 		String finalreason;
 		if(duration == -1) {
 			finalreason = "§5§lYour account has been \n§5§lpermanently suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff.getName() + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration) + "\n§fBan ID §5» §d#" + id + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration/1000) + "\n§fBan ID §5» §d#" + id + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		else {
 			finalreason = "§5§lYour account has been \n§5§ltemporarily suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff.getName() + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration) + "\n§fBan ID §5» §d#" + id + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration/1000) + "\n§fBan ID §5» §d#" + id + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		}
 		return finalreason;
 	}
@@ -236,7 +236,7 @@ public class Punishment {
 	private String getEvasionReason() {
 		String finalText = "§5§lAnother account with the same IP\n§5§lhas been temporarily suspended from our network!\n§5\n§fAccount's name §5» §d" + 
 	target + "\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff.getName() + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration) 
+					+ " §d" + Time.formatted(duration/1000) 
 					+ "\n§fLogin from your other\n§faccount in order to get your §dBan ID\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return finalText;
 	}

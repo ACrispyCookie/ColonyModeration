@@ -1,8 +1,7 @@
 package net.colonymc.moderationsystem.bungee.feedback;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import net.colonymc.colonyapi.MainDatabase;
 
@@ -21,15 +20,12 @@ public class StaffFeedback extends Feedback {
 	
 	@Override
 	public void answer(String playerUuid, String jsonString) {
-		JSONObject json;
-		try {
-			json = (JSONObject) new JSONParser().parse(jsonString);
-			MainDatabase.sendStatement("INSERT INTO StaffFeedback (uuid, playerUuid, active, helpful, friendly, fair, timestamp) VALUES "
-					+ "('" + staffUuid + "', '" + playerUuid + "', " + (Integer.parseInt((String) json.get("0")) + 1) + ", " + (Integer.parseInt((String) json.get("1")) + 1) + ", " + (Integer.parseInt((String) json.get("2")) + 1) 
-					+ ", " + (Integer.parseInt((String) json.get("3")) + 1) + ", " + System.currentTimeMillis() + ")");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		Gson g = new Gson();
+		JsonArray json = g.fromJson(jsonString, JsonArray.class);
+		MainDatabase.sendStatement("INSERT INTO StaffFeedback (uuid, playerUuid, active, helpful, friendly, fair, timestamp) VALUES "
+				+ "('" + staffUuid + "', '" + playerUuid + "', " + (Integer.parseInt(json.get(0).getAsJsonObject().get("0").getAsString()) + 1) + ", " + (Integer.parseInt(json.get(1).getAsJsonObject().get("1").getAsString()) + 1) 
+				+ ", " + (Integer.parseInt(json.get(2).getAsJsonObject().get("2").getAsString()) + 1) 
+				+ ", " + (Integer.parseInt(json.get(3).getAsJsonObject().get("3").getAsString()) + 1) + ", " + System.currentTimeMillis() + ")");
 	}
 	
 	public String getStaffUuid() {

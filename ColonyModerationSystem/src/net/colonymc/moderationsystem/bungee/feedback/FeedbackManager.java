@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.Main;
-import net.colonymc.moderationsystem.bungee.feedback.util.StaffMemberCounter;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMemberComparator;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -110,8 +111,6 @@ public class FeedbackManager {
 	
 	private String chooseStaff() {
 		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.HOUR, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
@@ -123,98 +122,14 @@ public class FeedbackManager {
 					topSurveyedStaff.add(rs.getString("uuid"));
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		rs = MainDatabase.getResultSet("SELECT * FROM ActiveBans WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-		ArrayList<StaffMemberCounter> topStaff = new ArrayList<StaffMemberCounter>();
-		try {
-			while(rs.next()) {
-				String uuid = rs.getString("staffUuid");
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
+			BStaffMember.loadStaff();
+			ArrayList<BStaffMember> staff = BStaffMember.getStaff();
+			Collections.sort(staff, new BStaffMemberComparator(cal.getTimeInMillis() - 21600000, cal.getTimeInMillis()));
+			for(int i = 0; i < BStaffMember.getStaff().size(); i++) {
+				BStaffMember smc = BStaffMember.getStaff().get(i);
+				if(smc.calculateBetween(cal.getTimeInMillis() - 21600000, cal.getTimeInMillis()) == 0) {
+					break;
 				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM ActiveMutes WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = rs.getString("staffUuid");
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM ArchivedBans WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = rs.getString("staffUuid");
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM ArchivedMutes WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = rs.getString("staffUuid");
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM ArchivedReports WHERE timeProcessed = " + cal.getTimeInMillis() + " OR timeProcessed > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = rs.getString("staffUuid");
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM DiscordBans WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = MainDatabase.getUuid(rs.getLong("staffId"));
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			rs = MainDatabase.getResultSet("SELECT * FROM ArchivedDiscordBans WHERE issuedAt = " + cal.getTimeInMillis() + " OR issuedAt > " + cal.getTimeInMillis() + ";");
-			while(rs.next()) {
-				String uuid = MainDatabase.getUuid(rs.getLong("staffId"));
-				if(!uuid.equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					if(topStaff.contains(StaffMemberCounter.getByUuid(uuid))) {
-						StaffMemberCounter.getByUuid(uuid).addValue(1);
-					}
-					else {
-						topStaff.add(new StaffMemberCounter(uuid, 1));
-					}
-				}
-			}
-			Collections.sort(topStaff);
-			for(int i = 0; i < topStaff.size(); i++) {
-				StaffMemberCounter smc = topStaff.get(i);
 				if(!topSurveyedStaff.contains(smc.getUuid())) {
 					return smc.getUuid();
 				}
@@ -225,7 +140,6 @@ public class FeedbackManager {
 					}
 				}
 			}
-			StaffMemberCounter.clear();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

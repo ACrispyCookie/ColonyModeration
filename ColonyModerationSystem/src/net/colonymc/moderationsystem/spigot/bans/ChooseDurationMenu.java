@@ -28,8 +28,8 @@ import net.colonymc.moderationsystem.spigot.reports.Report;
 public class ChooseDurationMenu implements Listener, InventoryHolder {
 	
 	Player p;
-	ArrayList<String> targetNames;
-	String targetName;
+	ArrayList<MenuPlayer> targets;
+	MenuPlayer targetName;
 	String reason;
 	PunishmentType type;
 	Inventory inv;
@@ -38,9 +38,9 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 	BukkitTask checkIfExists;
 	int seconds = 0;
 	
-	public ChooseDurationMenu(Player p, ArrayList<String> targetNames, String reason, PunishmentType type) {
+	public ChooseDurationMenu(Player p, ArrayList<MenuPlayer> targets, String reason, PunishmentType type) {
 		this.p = p;
-		this.targetNames = targetNames;
+		this.targets = targets;
 		this.reason = reason;
 		this.type = type;
 		this.inv = Bukkit.createInventory(this, 27, "Select a duration...");
@@ -58,9 +58,9 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 		}.runTaskLaterAsynchronously(Main.getInstance(), 2400);
 	}
 	
-	public ChooseDurationMenu(Player p, String targetName, String reason, PunishmentType type, int reportId) {
+	public ChooseDurationMenu(Player p, MenuPlayer target, String reason, PunishmentType type, int reportId) {
 		this.p = p;
-		this.targetName = targetName;
+		this.targetName = target;
 		this.reason = reason;
 		this.type = type;
 		this.reportId = reportId;
@@ -110,7 +110,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 		inv.setItem(24, new ItemStackBuilder(Material.STAINED_GLASS_PANE).name("&c-1 month").durability((short) 14).build());
 		inv.setItem(25, new ItemStackBuilder(Material.STAINED_GLASS_PANE).name("&c-1 year").durability((short) 14).build());
 		inv.setItem(13, new ItemStackBuilder(Material.WATCH)
-				.name("&fDuration: &d" + Time.formatted((long) seconds * 1000))
+				.name("&fDuration: &d" + Time.formatted(seconds))
 				.lore("\n&fClick the buttons above and below to\n&fchange the duration of the punishment!\n\n&dClick here &fto confirm the duration and execute\n&fthe punishment!")
 				.build());
 		if(targetName == null) {
@@ -291,10 +291,14 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 						p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 						p.closeInventory();
 						if(menu.targetName == null) {
-							BungeecordConnector.sendPunishment(menu.targetNames, p, menu.reason, (long) menu.seconds * 1000, menu.type);
+							ArrayList<String> names = new ArrayList<String>();
+							menu.targets.forEach((a) -> {
+								names.add(a.getName());
+							});
+							BungeecordConnector.sendPunishment(names, p, menu.reason, (long) menu.seconds * 1000, menu.type);
 						}
 						else {
-							BungeecordConnector.sendPunishment(menu.targetName, p, menu.reason, (long) menu.seconds * 1000, menu.type, menu.reportId);
+							BungeecordConnector.sendPunishment(menu.targetName.getUuid(), p, menu.reason, (long) menu.seconds * 1000, menu.type, menu.reportId);
 						}
 					}
 					else {
@@ -305,16 +309,20 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 					if(menu.targetName == null) {
 						p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 						p.closeInventory();
-						BungeecordConnector.sendPunishment(menu.targetNames, p, menu.reason, -1, menu.type);
+						ArrayList<String> names = new ArrayList<String>();
+						menu.targets.forEach((a) -> {
+							names.add(a.getName());
+						});
+						BungeecordConnector.sendPunishment(names, p, menu.reason, -1, menu.type);
 					}
 					else {
 						p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 						p.closeInventory();
-						BungeecordConnector.sendPunishment(menu.targetName, p, menu.reason, menu.getRecommendedDuration(), menu.type, menu.reportId);
+						BungeecordConnector.sendPunishment(menu.targetName.getUuid(), p, menu.reason, menu.getRecommendedDuration(), menu.type, menu.reportId);
 					}
 				}
 				menu.inv.setItem(13, new ItemStackBuilder(Material.WATCH)
-						.name("&fDuration: &d" + Time.formatted((long) menu.seconds * 1000))
+						.name("&fDuration: &d" + Time.formatted(menu.seconds))
 						.lore("\n&fClick the buttons above and below to\n&fchange the duration of the punishment!\n\n&dClick here &fto confirm the duration and execute\n&fthe punishment!")
 						.build());
 			}
@@ -323,7 +331,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 	
 	private long getRecommendedDuration() {
 		if(type == PunishmentType.BAN) {
-			int timesBanned = MainDatabase.getTimesBanned(targetName);
+			int timesBanned = MainDatabase.getTimesBanned(targetName.getName());
 			switch(timesBanned) {
 			case 0:
 				return 1209600000L;
@@ -336,7 +344,7 @@ public class ChooseDurationMenu implements Listener, InventoryHolder {
 			}
 		}
 		else if(type == PunishmentType.MUTE) {
-			int timesMuted = MainDatabase.getTimesMuted(targetName);
+			int timesMuted = MainDatabase.getTimesMuted(targetName.getName());
 			switch(timesMuted) {
 			case 0:
 				return 3600000L;

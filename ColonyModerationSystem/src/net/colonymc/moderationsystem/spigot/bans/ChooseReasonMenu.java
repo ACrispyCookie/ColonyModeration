@@ -30,20 +30,20 @@ import net.colonymc.moderationsystem.spigot.reports.Report;
 public class ChooseReasonMenu implements Listener, InventoryHolder {
 	
 	Player p;
-	ArrayList<String> targetNames;
+	ArrayList<MenuPlayer> targets;
 	PunishmentType type;
-	String targetName;
+	MenuPlayer target;
 	int reportId;
 	boolean cancelled;
 	BukkitTask cancel;
 	BukkitTask checkIfExists;
 	Inventory inv;
 	
-	public ChooseReasonMenu(Player p, String targetName, int reportId) {
+	public ChooseReasonMenu(Player p, MenuPlayer target, int reportId) {
 		this.p = p;
-		this.targetName = targetName;
+		this.target = target;
 		this.reportId = reportId;
-		this.inv = Bukkit.createInventory(this, 45, "Punishing " + targetName + "...");
+		this.inv = Bukkit.createInventory(this, 45, "Punishing " + target.getName() + "...");
 		fillInventory();
 		openInventory();
 		if(reportId != -1) {
@@ -71,15 +71,15 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 		}.runTaskLaterAsynchronously(Main.getInstance(), 2400);
 	}
 	
-	public ChooseReasonMenu(Player p, ArrayList<String> targetNames, PunishmentType type) {
+	public ChooseReasonMenu(Player p, ArrayList<MenuPlayer> targets, PunishmentType type) {
 		this.p = p;
-		this.targetNames = targetNames;
+		this.targets = targets;
 		this.type = type;
-		if(targetNames.size() == 1) {
-			this.inv = Bukkit.createInventory(this, 45, "Punishing " + targetNames.size() + " player...");
+		if(targets.size() == 1) {
+			this.inv = Bukkit.createInventory(this, 45, "Punishing " + targets.size() + " player...");
 		}
 		else {
-			this.inv = Bukkit.createInventory(this, 45, "Punishing " + targetNames.size() + " players...");
+			this.inv = Bukkit.createInventory(this, 45, "Punishing " + targets.size() + " players...");
 		}
 		fillInventory();
 		openInventory();
@@ -185,14 +185,14 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 				Player p = menu.p;
 				if(e.getSlot() == 19) {
 					if(p.hasPermission("mod.bans")) {
-						if(menu.targetName == null) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Cheating - Hacking", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Cheating - Hacking", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Cheating - Hacking", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Cheating - Hacking", menu.reportId);
 						}
 					}
 					else {
@@ -201,15 +201,15 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 					}
 				}
 				else if(e.getSlot() == 20) {
-					if(!MainDatabase.isMuted(menu.targetName) || isGettingBanned(menu.targetName)) {
-						if(menu.targetName == null) {
+					if(!MainDatabase.isMuted(menu.target.getName()) || isGettingBanned(menu.target.getName())) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Offensive language", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Offensive language", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Offensive language", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Offensive language", menu.reportId);
 						}
 					}
 					else {
@@ -218,15 +218,15 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 					}
 				}
 				else if(e.getSlot() == 21) {
-					if(!MainDatabase.isMuted(menu.targetName) || isGettingBanned(menu.targetName)) {
-						if(menu.targetName == null) {
+					if(!MainDatabase.isMuted(menu.target.getName()) || isGettingBanned(menu.target.getName())) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Negative behaviour", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Negative behaviour", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Negative behaviour", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Negative behaviour", menu.reportId);
 						}
 					}
 					else {
@@ -235,15 +235,15 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 					}
 				}
 				else if(e.getSlot() == 22) {
-					if(!MainDatabase.isMuted(menu.targetName) || isGettingBanned(menu.targetName)) {
-						if(menu.targetName == null) {
+					if(!MainDatabase.isMuted(menu.target.getName()) || isGettingBanned(menu.target.getName())) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Advertising", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Advertising", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Advertising", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Advertising", menu.reportId);
 						}
 					}
 					else {
@@ -252,15 +252,15 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 					}
 				}
 				else if(e.getSlot() == 23) {
-					if(!MainDatabase.isMuted(menu.targetName) || isGettingBanned(menu.targetName)) {
-						if(menu.targetName == null) {
+					if(!MainDatabase.isMuted(menu.target.getName()) || isGettingBanned(menu.target.getName())) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Spamming", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Spamming", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Spamming", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Spamming", menu.reportId);
 						}
 					}
 					else {
@@ -270,14 +270,14 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 				}
 				else if(e.getSlot() == 24) {
 					if(p.hasPermission("mod.bans")) {
-						if(menu.targetName == null) {
+						if(menu.target == null) {
 							menu.p.closeInventory();
-							new ChooseDurationMenu(menu.p, menu.targetNames, "Bug Abusing", menu.type);
+							new ChooseDurationMenu(menu.p, menu.targets, "Bug Abusing", menu.type);
 						}
 						else {
 							p.playSound(p.getLocation(), Sound.LEVEL_UP, 2, 1);
 							menu.p.closeInventory();
-							BungeecordConnector.sendPunishment(menu.targetName, p, "Bug Abusing", menu.reportId);
+							BungeecordConnector.sendPunishment(menu.target.getUuid(), p, "Bug Abusing", menu.reportId);
 						}
 					}
 					else {
@@ -295,11 +295,11 @@ public class ChooseReasonMenu implements Listener, InventoryHolder {
 								String msg = lines[0].replaceAll("\"", "");
 								if(!msg.isEmpty()) {
 									player.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fYou set the custom reason to &d[" + msg + "]&f!"));
-									if(menu.targetName == null) {
-										new ChooseDurationMenu(player, menu.targetNames, msg, menu.type);
+									if(menu.target == null) {
+										new ChooseDurationMenu(player, menu.targets, msg, menu.type);
 									}
 									else {
-										new ChooseTypeMenu(player, menu.targetName, msg, menu.reportId);
+										new ChooseTypeMenu(player, menu.target, msg, menu.reportId);
 									}
 								}
 								else {

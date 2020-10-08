@@ -19,6 +19,13 @@ import net.colonymc.moderationsystem.spigot.staffmanager.utils.Session;
 
 public class BStaffMember {
 	
+	public enum FIXED_TIME {
+		DAILY,
+		WEEKLY,
+		MONTHLY,
+		TOTAL;
+	}
+	
 	String uuid;
 	Rank rank;
 	long joinTimestamp;
@@ -58,6 +65,48 @@ public class BStaffMember {
 	}
 	
 	public int calculateBetween(long start, long end) {
+		ArrayList<Feedback> feedback = getFeedbackAfter(start);
+		if(Feedback.getFromArray(feedback, FEEDBACK_TYPE.TOTAL) < 20) {
+			int tBans = countBansAfter(start);
+			int tReports = getReportsAfter(start).size();
+			int tPlaytime = getPlaytimeBetween(start, end);
+			int totalBanPoints = tBans * 20;
+			int totalReportPoints = tReports * 20;
+			int totalPlaytimePoints = tPlaytime / 60;
+			return (totalBanPoints + totalReportPoints + totalPlaytimePoints);
+		}
+		else {
+			int tBans = countBansAfter(start);
+			int tReports = getReportsAfter(start).size();
+			int tPlaytime = getPlaytimeBetween(start, end);
+			double tFairF = 5 - Feedback.getFromArray(feedback, FEEDBACK_TYPE.FAIR);
+			double tActiveF = 5 - ((Feedback.getFromArray(feedback, FEEDBACK_TYPE.ACTIVE) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.FRIENDLY) + Feedback.getFromArray(feedback, FEEDBACK_TYPE.HELPFUL))/3);
+			int totalBanPoints = (int) (tBans * 20 - tFairF * tBans);
+			int totalReportPoints = (int) (tReports * 20 - tFairF * tReports);
+			int totalPlaytimePoints = (int) (tPlaytime / 60 - tActiveF * (tPlaytime/60));
+			return (totalBanPoints + totalReportPoints + totalPlaytimePoints);
+		}
+	}
+	
+	public int calculateFixed(FIXED_TIME time) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long start = 0;
+		long end = System.currentTimeMillis();
+		if(time == FIXED_TIME.DAILY) {
+			start = cal.getTimeInMillis();
+		}
+		else if(time == FIXED_TIME.WEEKLY) {
+			cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+			start = cal.getTimeInMillis();
+		}
+		else if(time == FIXED_TIME.MONTHLY) {
+			cal.set(Calendar.DAY_OF_MONTH, 0);
+			start = cal.getTimeInMillis();
+		}
 		ArrayList<Feedback> feedback = getFeedbackAfter(start);
 		if(Feedback.getFromArray(feedback, FEEDBACK_TYPE.TOTAL) < 20) {
 			int tBans = countBansAfter(start);

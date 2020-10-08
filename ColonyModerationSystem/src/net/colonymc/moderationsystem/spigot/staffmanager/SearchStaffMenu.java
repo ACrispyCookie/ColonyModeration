@@ -22,6 +22,7 @@ import net.colonymc.api.itemstacks.ItemStackBuilder;
 import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember;
+import net.colonymc.moderationsystem.bungee.staffmanager.BStaffMember.FIXED_TIME;
 import net.colonymc.moderationsystem.spigot.Main;
 
 public class SearchStaffMenu implements Listener, InventoryHolder {
@@ -37,7 +38,7 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 	public SearchStaffMenu(Player p, String query) {
 		this.p = p;
 		BStaffMember.loadStaff();
-		for(BStaffMember m : BStaffMember.getStaff()) {
+		for(BStaffMember m : BStaffMember.getAllStaff()) {
 			if(MainDatabase.getName(m.getUuid()).toLowerCase().contains(query.toLowerCase())) {
 				found.add(m);
 			}
@@ -74,11 +75,23 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 				String leaveTimestamp = sdf.format(new Date(b.getLeave()));
 				String rank = b.getRank().getName();
 				ItemStack item = new SkullItemBuilder().playerUuid(UUID.fromString(b.getUuid())).name((b.isStaff() ? "&d" : "&c") + name)
-						.lore("\n&5» &fRank: &d" + rank + 
-								"\n&5» &fJoined at: &d" + joinTimestamp + 
-								"\n&5» &fLeft at: &d" + leaveTimestamp + 
-								"\n \n" + (b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted\n&cbecause they no longer\n&chave their discord linked!"))
-								+ (b.isStaff() ? "" : "\n \n&cThis player is no longer a staff member!")).build();
+						.lore(
+								"\n&d&nInformation:" + 
+								"\n &5» &fRank: &d" + rank + 
+								"\n &5» &fJoined at: &d" + joinTimestamp + 
+								"\n &5» &fLeft at: &d" + leaveTimestamp + 
+								"\n " +
+								"\n&d&nRatings:" + 
+								"\n &5» &fDaily rating: &d" + b.calculateFixed(FIXED_TIME.DAILY) + 
+								"\n &5» &fWeekly rating: &d" + b.calculateFixed(FIXED_TIME.WEEKLY) + 
+								"\n &5» &fMonthly rating: &d" + b.calculateFixed(FIXED_TIME.MONTHLY) + 
+								"\n " +
+								(b.hasTitles() ? p.hasPermission("colonymc.staffmanager") ? "\n&5» &d&nTitles:" + "\n " + b.getFullTitles() + "\n \n" : "\n&5» &d&nTitles:" + "\n " + b.getTitles() + "\n \n" : "\n") +
+								(b.isStaff() ? "&dClick to inspect " + name : (MainDatabase.getDiscordId(b.getUuid()) != 0 ? "&cClick to promote " + name : "&cThis player cannot be promoted"
+										+ "\n&cbecause they no longer"
+										+ "\n&chave their discord linked!"))
+								+ (b.isStaff() ? "" : "\n "
+										+ "\n&cThis player is no longer a staff member!")).build();
 				inv.setItem(i - notShowing, item);
 				staff.put(i - notShowing, b);
 			}

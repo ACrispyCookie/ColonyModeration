@@ -188,9 +188,11 @@ public class JoinListener implements Listener {
 				if(u.getPrimaryGroup().equals("admininstrator") || u.getPrimaryGroup().equals("owner") 
 						|| u.getPrimaryGroup().equals("manager") || u.getPrimaryGroup().equals("moderator") || u.getPrimaryGroup().equals("helper") || u.getPrimaryGroup().equals("media")) {
 					String rank = "[" + getFormattedRank(u.getPrimaryGroup()) + "] " + name;
-					if(!member.getNickname().equals(rank)) {
-						member.modifyNickname(rank).queue();
-						updateName.cancel();
+					if(rank != null) {
+						if(!member.getNickname().equals(rank)) {
+							updateName.cancel();
+							member.modifyNickname(rank).queue();
+						}
 					}
 				}
 			}
@@ -224,14 +226,14 @@ public class JoinListener implements Listener {
 	
 	private TextComponent createReasonComponent(String staff, long duration, String reason, String ID) {
 		String finalText = "§5§lYour account has been \n§5§ltemporarily suspended from our network!\n§5\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration) + "\n§fBan ID §5» §d#" + ID + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
+					+ " §d" + Time.formatted(duration/1000) + "\n§fBan ID §5» §d#" + ID + "\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return new TextComponent(finalText);
 	}
 	
 	private TextComponent createBanEvasionComponent(String bannedName, String reason, String staff, long duration) {
 		String finalText = "§5§lAnother account with the same IP\n§5§lhas been temporarily suspended from our network!\n§5\n§fAccount's name §5» §d" + 
 	bannedName + "\n§fReason §5» §d" + reason + "\n§fBanned by §5» §d" + staff + "\n§fUnban in §5»"
-					+ " §d" + Time.formatted(duration) 
+					+ " §d" + Time.formatted(duration/1000) 
 					+ "\n§fLogin from your other\n§faccount in order to get your §dBan ID\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return new TextComponent(finalText);
 	}

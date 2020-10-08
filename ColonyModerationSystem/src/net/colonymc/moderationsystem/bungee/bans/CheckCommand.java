@@ -14,12 +14,26 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-public class CheckCommand extends Command {
+public class CheckCommand extends Command implements TabExecutor {
 
 	public CheckCommand() {
 		super("check");
+	}
+	
+	@Override
+	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+		if(args.length == 1) {
+			ArrayList<String> names = new ArrayList<String>();
+			for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+				names.add(p.getName());
+			}
+			return names;
+		}
+		return null;
 	}
 
 	@Override
@@ -37,7 +51,7 @@ public class CheckCommand extends Command {
 							String reason = rs.getString("reason");
 							long bannedUntilFinal = rs.getLong("bannedUntil") - System.currentTimeMillis();
 							String ID = rs.getString("ID");
-							String bannedForAnother = Time.formatted(bannedUntilFinal);
+							String bannedForAnother = Time.formatted(bannedUntilFinal/1000);
 							TextComponent finalText = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m------------------&r &d#" + ID + " ban &f&m------------------"));
 							finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fPlayer's Name: \n    &d" + playerName));
 							finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n\n &5&l» &fPlayer's UUID: \n    &d" + uuid));
@@ -59,7 +73,7 @@ public class CheckCommand extends Command {
 								String bannedAt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(mute.getLong("issuedAt")));
 								long bannedUntilFinal = mute.getLong("mutedUntil") - System.currentTimeMillis();
 								String ID = mute.getString("ID");
-								String bannedForAnother = Time.formatted(bannedUntilFinal);
+								String bannedForAnother = Time.formatted(bannedUntilFinal/1000);
 								TextComponent finalText = new TextComponent(ChatColor.translateAlternateColorCodes('&', "&f&m------------------&r &d#" + ID + " mute &f&m------------------"));
 								finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n &5&l» &fPlayer's Name: \n    &d" + playerName));
 								finalText.addExtra(ChatColor.translateAlternateColorCodes('&', "\n\n &5&l» &fPlayer's UUID: \n    &d" + uuid));

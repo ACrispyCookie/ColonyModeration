@@ -1,20 +1,37 @@
 package net.colonymc.moderationsystem.bungee.staffmanager;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.Messages;
 import net.colonymc.moderationsystem.bungee.SpigotConnector;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 
-public class DemoteCommand extends Command {
+public class DemoteCommand extends Command implements TabExecutor {
 
 	public DemoteCommand() {
 		super("demote");
 	}
 
+	@Override
+	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+		Set<String> matches = new HashSet<>();
+		String search = args[0].toLowerCase();
+		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+            if(p.getName().toLowerCase().startsWith(search.toLowerCase())) {
+        		matches.add(p.getName());
+            }
+		}
+		return matches;
+	}
+	
 	@Override
 	public void execute(CommandSender sender, String[] args) {
 		if(sender instanceof ProxiedPlayer) {

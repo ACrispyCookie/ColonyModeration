@@ -25,7 +25,7 @@ import net.md_5.bungee.api.ChatColor;
 public class ChooseTypeMenu implements Listener, InventoryHolder {
 	
 	Player p;
-	String target;
+	MenuPlayer target;
 	String reason;
 	int reportId;
 	Inventory inv;
@@ -49,7 +49,7 @@ public class ChooseTypeMenu implements Listener, InventoryHolder {
 		}.runTaskLaterAsynchronously(Main.getInstance(), 2400);
 	}
 	
-	public ChooseTypeMenu(Player p, String target, String reason, int reportId) {
+	public ChooseTypeMenu(Player p, MenuPlayer target, String reason, int reportId) {
 		this.p = p;
 		this.target = target;
 		this.reason = reason;
@@ -147,14 +147,14 @@ public class ChooseTypeMenu implements Listener, InventoryHolder {
 					if(menu.target == null) {
 						new ChoosePlayerMenu(menu.p, PunishmentType.BAN, true);
 					}
-					else if(MainDatabase.getTimesMuted(menu.target) < 3){
+					else if(MainDatabase.getTimesMuted(menu.target.getName()) < 3){
 						new ChooseDurationMenu(menu.p, menu.target, menu.reason, PunishmentType.BAN, menu.reportId);
 					}
 					else {
 						menu.p.playSound(menu.p.getLocation(), Sound.LEVEL_UP, 2, 1);
 						menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fThe player has been permanently banned due to their bad history!"));
 						menu.p.closeInventory();
-						BungeecordConnector.sendPunishment(menu.target, menu.p, menu.reason, menu.reportId);
+						BungeecordConnector.sendPunishment(menu.target.getUuid(), menu.p, menu.reason, menu.reportId);
 					}
 				}
 				else if(e.getSlot() == 13) {
@@ -162,14 +162,14 @@ public class ChooseTypeMenu implements Listener, InventoryHolder {
 					if(menu.target == null) {
 						new ChoosePlayerMenu(menu.p, null, true);
 					}
-					else if(MainDatabase.getTimesMuted(menu.target) < 3){
+					else if(MainDatabase.getTimesMuted(menu.target.getName()) < 3){
 						new ChooseDurationMenu(menu.p, menu.target, menu.reason, menu.getRecommended(), menu.reportId);
 					}
 					else {
 						menu.p.playSound(menu.p.getLocation(), Sound.LEVEL_UP, 2, 1);
 						menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fThe player has been permanently banned due to their bad history!"));
 						menu.p.closeInventory();
-						BungeecordConnector.sendPunishment(menu.target, menu.p, menu.reason, menu.reportId);
+						BungeecordConnector.sendPunishment(menu.target.getUuid(), menu.p, menu.reason, menu.reportId);
 					}
 				}
 				else if(e.getSlot() == 15) {
@@ -178,15 +178,15 @@ public class ChooseTypeMenu implements Listener, InventoryHolder {
 						new ChoosePlayerMenu(menu.p, PunishmentType.MUTE, true);
 					}
 					else {
-						if(!MainDatabase.isMuted(menu.target)) {
-							if(MainDatabase.getTimesMuted(menu.target) < 3){
+						if(!MainDatabase.isMuted(menu.target.getName())) {
+							if(MainDatabase.getTimesMuted(menu.target.getName()) < 3){
 								new ChooseDurationMenu(menu.p, menu.target, menu.reason, PunishmentType.MUTE, menu.reportId);
 							}
 							else {
 								menu.p.playSound(menu.p.getLocation(), Sound.LEVEL_UP, 2, 1);
 								menu.p.sendMessage(ChatColor.translateAlternateColorCodes('&', " &5&l» &fThe player has been permanently banned due to their bad history!"));
 								menu.p.closeInventory();
-								BungeecordConnector.sendPunishment(menu.target, menu.p, menu.reason, menu.reportId);
+								BungeecordConnector.sendPunishment(menu.target.getUuid(), menu.p, menu.reason, menu.reportId);
 							}
 						}
 						else {
@@ -211,11 +211,11 @@ public class ChooseTypeMenu implements Listener, InventoryHolder {
 	}
 	
 	public PunishmentType getRecommended() {
-		int times = MainDatabase.getTimesMuted(target);
+		int times = MainDatabase.getTimesMuted(target.getName());
 		if(times == 6) {
 			return PunishmentType.BAN;
 		}
-		else if(MainDatabase.isMuted(target)) {
+		else if(MainDatabase.isMuted(target.getName())) {
 			return PunishmentType.BAN;
 		}
 		return PunishmentType.MUTE;

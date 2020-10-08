@@ -2,7 +2,6 @@ package net.colonymc.moderationsystem.spigot.reports;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -25,8 +24,8 @@ import net.colonymc.api.itemstacks.SkullItemBuilder;
 import net.colonymc.colonyapi.MainDatabase;
 import net.colonymc.moderationsystem.spigot.BungeecordConnector;
 import net.colonymc.moderationsystem.spigot.Main;
-import net.colonymc.moderationsystem.spigot.bans.ChoosePlayerMenu;
 import net.colonymc.moderationsystem.spigot.bans.ChooseReasonMenu;
+import net.colonymc.moderationsystem.spigot.bans.MenuPlayer;
 
 public class ProcessReport implements Listener, InventoryHolder {
 
@@ -35,12 +34,12 @@ public class ProcessReport implements Listener, InventoryHolder {
 	Report r;
 	BukkitTask update;
 	BukkitTask checkIfExists;
-	String[] serverNames = new String[] {"skyblock", "lobby"};
 	
 	public ProcessReport(Report r, Player p) {
 		this.r = r;
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, 54, "Processing [Report #" + r.getId() + "]...");
+		MenuPlayer.forceLoad();
 		fillInventory();
 		openInventory();
 		checkIfExists = new BukkitRunnable() {
@@ -60,20 +59,11 @@ public class ProcessReport implements Listener, InventoryHolder {
 			@Override
 			public void run() {
 				updateServers();
-				boolean isOnline = false;
-				for(ArrayList<String> a : ChoosePlayerMenu.servers.values()) {
-					for(String s : a) {
-						if(s.equals(r.getReportedName())) {
-							isOnline = true;
-							break;
-						}
-					}
-				}
 				inv.setItem(13, new SkullItemBuilder()
 						.playerUuid(UUID.fromString(r.getReportedUuid()))
 						.name("&fReport &d#" + r.getId())
 						.lore("\n&fReported Player: &d" + r.getReportedName() + "\n&fReporter player: &d" + r.getReporterName() + "\n&fReason: &d" + r.getReason() + "\n\n&fStatus: " +
-						((isOnline) ? "&aOnline" : "&cOffline"))
+						((MenuPlayer.getByUuid(r.getReportedUuid())).isOnline() ? "&aOnline" : "&cOffline"))
 						.build());
 			}
 		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 1);
@@ -105,9 +95,7 @@ public class ProcessReport implements Listener, InventoryHolder {
 	}
 	
 	public void updateServers() {
-		for(String s : serverNames) {
-			BungeecordConnector.servers(p, s);
-		}
+		BungeecordConnector.requestPlayers(p);
 	}
 	
 	public void openInventory() {
@@ -127,7 +115,7 @@ public class ProcessReport implements Listener, InventoryHolder {
 			if(e.getClickedInventory() != null && e.getClickedInventory().getType() != InventoryType.PLAYER) {
 				if(e.getSlot() == 29) {
 					menu.p.closeInventory();
-					new ChooseReasonMenu(menu.p, menu.r.getReportedName(), menu.r.getId());
+					new ChooseReasonMenu(menu.p, MenuPlayer.getByUuid(menu.r.getReportedUuid()), menu.r.getId());
 				}
 				else if(e.getSlot() == 31 && menu.hasValidPunishments()) {
 					menu.p.closeInventory();

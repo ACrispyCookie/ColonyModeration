@@ -5,11 +5,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.moderationsystem.spigot.Main;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public class Report{
+public class Report {
 
 	public static ArrayList<Report> reports = new ArrayList<Report>();
 	public static ArrayList<Report> archived = new ArrayList<Report>();
@@ -26,6 +29,7 @@ public class Report{
 	String processorUuid;
 	boolean punished;
 	String punishmentId;
+	static BukkitTask update;
 	
 	public Report(String reportedName, String reporterName, String reportedUuid, String reporterUuid, String reason, long reportedOn, int id) {
 		this.reportedName = reportedName;
@@ -56,6 +60,13 @@ public class Report{
 	}
 	
 	public Report() {
+		update = new BukkitRunnable() {
+			@Override
+			public void run() {
+				updateReports();
+				updateArchivedReports();
+			}
+		}.runTaskTimerAsynchronously(Main.getInstance(), 0, 60);
 	}
 
 	public void process(Player p) {
@@ -165,7 +176,11 @@ public class Report{
 		return playerReports;
 	}
 	
-	public static void updateReports() {
+	public static void pauseUpdating() {
+		update.cancel();
+	}
+	
+	private static void updateReports() {
 		ResultSet rs = MainDatabase.getResultSet("SELECT * FROM ActiveReports");
 		try {
 			while(rs.next()) {
@@ -185,7 +200,7 @@ public class Report{
 		}
 	}
 	
-	public static void updateArchivedReports() {
+	private static void updateArchivedReports() {
 		ResultSet rs = MainDatabase.getResultSet("SELECT * FROM ArchivedReports");
 		try {
 			while(rs.next()) {
