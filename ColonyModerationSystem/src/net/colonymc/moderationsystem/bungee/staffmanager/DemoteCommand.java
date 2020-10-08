@@ -36,7 +36,7 @@ public class DemoteCommand extends Command implements TabExecutor {
 	public void execute(CommandSender sender, String[] args) {
 		if(sender instanceof ProxiedPlayer) {
 			ProxiedPlayer p = (ProxiedPlayer) sender;
-			if(p.hasPermission("*")) {
+			if(p.hasPermission("colonymc.staffmanager")) {
 				if(args.length == 1) {
 					if(!MainDatabase.getUuid(args[0]).equals("Not Found")) {
 						String uuid = MainDatabase.getUuid(args[0]);

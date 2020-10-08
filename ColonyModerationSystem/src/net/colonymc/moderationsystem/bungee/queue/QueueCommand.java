@@ -65,7 +65,7 @@ public class QueueCommand extends Command {
 						}
 					}
 					else {
-						sender.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &fThis player is not online!")));
+						sender.sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', " &5&l» &cThis player is not online!")));
 					}
 				}
 				else {
