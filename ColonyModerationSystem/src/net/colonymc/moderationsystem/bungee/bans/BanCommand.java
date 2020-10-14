@@ -1,6 +1,7 @@
 package net.colonymc.moderationsystem.bungee.bans;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,14 +27,14 @@ public class BanCommand extends Command implements TabExecutor  {
 
 	@Override
 	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-		if(args.length == 1) {
-			ArrayList<String> names = new ArrayList<String>();
-			for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
-				names.add(p.getName());
-			}
-			return names;
+		Set<String> matches = new HashSet<>();
+		String search = args[0].toLowerCase();
+		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+            if(p.getName().toLowerCase().startsWith(search.toLowerCase())) {
+        		matches.add(p.getName());
+            }
 		}
-		return null;
+		return matches;
 	}
 
 	@Override
