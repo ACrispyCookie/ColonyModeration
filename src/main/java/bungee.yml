@@ -1,5 +1,5 @@
 name: ColonyModerationSystem
 version: 2.0
 author: ACrispyCookie
-main: net.colonymc.moderationsystem.bungee.Main
+main: net.colonymc.colonymoderationsystem.bungee.Main
 depend: [ColonyDiscordAPI]
