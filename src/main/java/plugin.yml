@@ -2,7 +2,7 @@ name: ColonyModerationSystem
 version: 2.0
 author: ACrispyCookie
 main: net.colonymc.colonymoderationsystem.spigot.Main
-depend: [ColonyAPI, ColonySpigotAPI]
+depend: [ColonyAPI, ColonySpigotAPI, LuckPerms, ProtocolLib]
 commands: 
   queue:
     description: Command used to get in queue.

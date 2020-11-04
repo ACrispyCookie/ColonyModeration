@@ -186,7 +186,7 @@ public class Main extends Plugin {
 	
 	private void setupDiscordBot() {
 		try {
-			jda = new JDABuilder(AccountType.BOT).setToken("NjQ0NjU1MTIzNTYxMTg1MzQ5.Xo4RLg.nSRlrG0N-tRKZXL0wTQ6kvUkioY").build();
+			jda = JDABuilder.createDefault("NjQ0NjU1MTIzNTYxMTg1MzQ5.Xo4RLg.nSRlrG0N-tRKZXL0wTQ6kvUkioY").build();
 			jda.awaitReady();
 			Main.getGuild().getVoiceChannelById(705743260953477188L).getManager().setName("✅ Total Users: " + Main.getGuild().getMemberCount()).queue();
 			ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
@@ -411,7 +411,7 @@ public class Main extends Plugin {
 	}
 	
 	public static User getUser(long userID) {
-		return jda.getUserById(userID);
+		return jda.retrieveUserById(userID).complete();
 	}
 	
 	public static Guild getGuild() {
@@ -425,13 +425,13 @@ public class Main extends Plugin {
 	
 	public static void addRanksToPlayer(long userID, long rankID) {
 		Guild guild = jda.getGuildById(349836835670851584L);
-		Member m = guild.getMemberById(userID);
+		Member m = guild.retrieveMemberById(userID).complete();
 		guild.addRoleToMember(m, guild.getRoleById(rankID)).queue();
 	}
 	
 	public static void removeRanksFromPlayer(long userID, long rankID) {
 		Guild guild = jda.getGuildById(349836835670851584L);
-		Member m = guild.getMemberById(userID);
+		Member m = guild.retrieveMemberById(userID).complete();;
 		guild.removeRoleFromMember(m, guild.getRoleById(rankID)).queue();
 	}
 
