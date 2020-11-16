@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.bans.Punishment;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;

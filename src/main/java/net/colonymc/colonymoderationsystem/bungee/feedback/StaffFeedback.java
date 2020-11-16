@@ -3,7 +3,7 @@ package net.colonymc.colonymoderationsystem.bungee.feedback;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 
 public class StaffFeedback extends Feedback {
 

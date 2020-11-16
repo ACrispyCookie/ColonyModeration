@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;

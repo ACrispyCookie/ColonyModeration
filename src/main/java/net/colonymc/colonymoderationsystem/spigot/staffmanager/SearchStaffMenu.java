@@ -20,7 +20,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
 import net.colonymc.colonyspigotapi.itemstacks.SkullItemBuilder;
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember.FIXED_TIME;
 import net.colonymc.colonymoderationsystem.spigot.Main;

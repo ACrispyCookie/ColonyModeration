@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.colonymc.colonymoderationsystem.bungee.bans.PunishmentType;
 import net.colonymc.colonymoderationsystem.spigot.BungeecordConnector;

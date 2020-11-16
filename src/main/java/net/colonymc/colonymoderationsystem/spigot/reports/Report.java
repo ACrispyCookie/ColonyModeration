@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.Main;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 

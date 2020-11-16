@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMemberComparator;

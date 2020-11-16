@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.bans.Ban;
 import net.colonymc.colonymoderationsystem.bungee.bans.BanCommand;
 import net.colonymc.colonymoderationsystem.bungee.bans.CheckCommand;
@@ -52,7 +52,6 @@ import net.colonymc.colonymoderationsystem.bungee.twofa.McLinkCommand;
 import net.colonymc.colonymoderationsystem.bungee.twofa.SecureLogoutCommand;
 import net.colonymc.colonymoderationsystem.bungee.twofa.UnlinkCommand;
 import net.colonymc.colonymoderationsystem.bungee.twofa.VerifiedPlayer;
-import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -65,7 +64,6 @@ import net.luckperms.api.LuckPermsProvider;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -73,7 +71,6 @@ import net.md_5.bungee.config.YamlConfiguration;
 public class Main extends Plugin {
  	
     private File logfile;
-	private ScheduledTask databaseLoader;
 	private static LuckPerms luckPerms;
 	private static Main instance;
 	private static FeedbackManager feedback;
@@ -84,40 +81,26 @@ public class Main extends Plugin {
 	
 	public void onEnable() {
 		setInstance(this);
-		System.out.println("[ColonyModerationSystem] Waiting for ColonyAPI...");
-		Runnable run = () -> {
-			try {
-				MainDatabase.isConnected();
-				if(!MainDatabase.isConnecting()) {
-					databaseLoader.cancel();
-					if(MainDatabase.isConnected()) {
-						setupDiscordBot();
-						loadNonDatabase();
-						loadDatabaseRequired();
-						loadLinkedPlayers();
-						setupRevokers();
-						setupTopStaffAnnouncer();
-						setupFeedback();
-						logfile = new File(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt");
-						luckPerms = LuckPermsProvider.get();
-						if(!logfile.exists()) {
-							createNewLogFile();
-						}
-						loadQueues();
-						started = true;
-						System.out.println("[ColonyModerationSystem] has been enabled successfully!");
-					}
-					else {
-						ProxyServer.getInstance().getPluginManager().registerListener(Main.this, new DatabaseListener());
-						System.out.println("[ColonyModerationSystem] Couldn't connect to the databases! The network is not accessible from in-game. Every server will restart when the main database is back up!");
-					}
-				}
+		setupDiscordBot();
+		loadNonDatabase();
+		if(MainDatabase.isConnected()) {
+			loadDatabaseRequired();
+			loadLinkedPlayers();
+			setupRevokers();
+			setupTopStaffAnnouncer();
+			setupFeedback();
+			logfile = new File(ProxyServer.getInstance().getPluginsFolder() + "/ColonyModerationSystem/log.txt");
+			luckPerms = LuckPermsProvider.get();
+			if(!logfile.exists()) {
+				createNewLogFile();
 			}
-			catch(NoSuchMethodError ignored) {
-
-			}
-		};
-		databaseLoader = ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), run, 0, 2, TimeUnit.SECONDS);
+			loadQueues();
+			started = true;
+			System.out.println("[ColonyModerationSystem] has been enabled successfully!");
+		}
+		else {
+			System.out.println("[ColonyModerationSystem] Couldn't connect to the databases!");
+		}
 	}
 
 	private void createNewLogFile() {
@@ -222,7 +205,6 @@ public class Main extends Plugin {
 		getProxy().registerChannel("FeedbackChannel");
 		getProxy().registerChannel("QueueChannel");
 		//listeners setup
-		ProxyServer.getInstance().getPluginManager().registerListener(this, new DatabaseListener());
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new ChatListener());
 		ProxyServer.getInstance().getPluginManager().registerListener(this, new Queue());
 		ProxyServer.getInstance().getPluginManager().registerCommand(this, new QueueCommand());
@@ -337,16 +319,16 @@ public class Main extends Plugin {
 				long discordId = rs.getLong("discordId");
 				if(bannedUntil < System.currentTimeMillis()) {
 					MainDatabase.sendStatement("DELETE FROM DiscordBans WHERE discordId='" + rs.getLong("discordId") + "' AND bannedUntil=" + bannedUntil + ";");
-					Main.getGuild().unban(Main.getJDA().getUserById(discordId)).queue();
+					Main.getGuild().unban(Main.getUser(discordId)).queue();
 				}
 				else {
 					if(rs.getString("type").equals("ban")) {
-						new DiscordBan(new DiscordUser(discordId, MainDatabase.getDiscordTag(discordId)), Main.getJDA().getUserById(rs.getLong("staffId")), 
+						new DiscordBan(new DiscordUser(discordId, MainDatabase.getDiscordTag(discordId)), Main.getUser(rs.getLong("staffId")),
 								rs.getString("reason"), rs.getLong("bannedUntil"), rs.getLong("issuedAt"), rs.getLong("messageId"));
 						bans++;
 					}
 					else if(rs.getString("type").equals("mute")) {
-						new DiscordMute(new DiscordUser(discordId, MainDatabase.getDiscordTag(discordId)), Main.getJDA().getUserById(rs.getLong("staffId")), 
+						new DiscordMute(new DiscordUser(discordId, MainDatabase.getDiscordTag(discordId)), Main.getUser(rs.getLong("staffId")),
 								rs.getString("reason"), rs.getLong("bannedUntil"), rs.getLong("issuedAt"), rs.getLong("messageId"));
 						mutes++;
 					}
@@ -420,7 +402,7 @@ public class Main extends Plugin {
 	
 	public static Member getMember(User u) {
 		Guild guild = jda.getGuildById(349836835670851584L);
-		return guild.getMember(u);
+		return guild.retrieveMember(u).complete();
 	}
 	
 	public static void addRanksToPlayer(long userID, long rankID) {
@@ -431,7 +413,7 @@ public class Main extends Plugin {
 	
 	public static void removeRanksFromPlayer(long userID, long rankID) {
 		Guild guild = jda.getGuildById(349836835670851584L);
-		Member m = guild.retrieveMemberById(userID).complete();;
+		Member m = guild.retrieveMemberById(userID).complete();
 		guild.removeRoleFromMember(m, guild.getRoleById(rankID)).queue();
 	}
 

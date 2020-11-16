@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.bans.ChooseDurationMenu;
 import net.colonymc.colonymoderationsystem.spigot.bans.ChoosePlayerMenu;
 import net.colonymc.colonymoderationsystem.spigot.bans.ChooseReasonMenu;
@@ -15,7 +15,6 @@ import net.colonymc.colonymoderationsystem.spigot.queue.LeaveQueueCommand;
 import net.colonymc.colonymoderationsystem.spigot.queue.QueueCommand;
 import net.colonymc.colonymoderationsystem.spigot.reports.ArchivedReportsMenu;
 import net.colonymc.colonymoderationsystem.spigot.reports.ProcessReport;
-import net.colonymc.colonymoderationsystem.spigot.reports.Report;
 import net.colonymc.colonymoderationsystem.spigot.reports.ReportMenu;
 import net.colonymc.colonymoderationsystem.spigot.reports.ReportsMenu;
 import net.colonymc.colonymoderationsystem.spigot.reports.SelectExistingMenu;
@@ -71,7 +70,6 @@ public class Main extends JavaPlugin {
 			System.out.println("[ColonyModerationSystem] » has been enabled successfully!");
 		}
 		else {
-			Bukkit.getPluginManager().registerEvents(new DatabaseListener(), this);
 			System.out.println("[ColonyModerationSystem] Couldn't connect to the databases! The network is not accessible from in-game. Every server will restart when the main database is back up!");
 		}
 	}
@@ -87,7 +85,6 @@ public class Main extends JavaPlugin {
 	
 	private void setupOtherClasses() {
 		//setup for plugin channels
-		new Report();
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BanChannel");
 		this.getServer().getMessenger().registerIncomingPluginChannel(this, "BanChannel", new MenuPlayer());
 		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "ReportChannel");

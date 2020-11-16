@@ -3,7 +3,7 @@ package net.colonymc.colonymoderationsystem.bungee.discord;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.Messages;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.dv8tion.jda.api.entities.Guild;

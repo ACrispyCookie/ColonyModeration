@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.Messages;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.colonymc.colonymoderationsystem.bungee.SpigotConnector;

@@ -21,7 +21,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
 import net.colonymc.colonyspigotapi.itemstacks.SkullItemBuilder;
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.colonymoderationsystem.spigot.Main;

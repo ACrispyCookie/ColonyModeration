@@ -18,7 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.BungeecordConnector;
 import net.colonymc.colonymoderationsystem.spigot.Main;
 import net.colonymc.colonymoderationsystem.spigot.Main.SERVER;

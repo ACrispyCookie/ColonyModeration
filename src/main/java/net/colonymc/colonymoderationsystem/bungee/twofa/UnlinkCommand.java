@@ -1,6 +1,6 @@
 package net.colonymc.colonymoderationsystem.bungee.twofa;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.dv8tion.jda.api.entities.Member;
 import net.md_5.bungee.api.ChatColor;

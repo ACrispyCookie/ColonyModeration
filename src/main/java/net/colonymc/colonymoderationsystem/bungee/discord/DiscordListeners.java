@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.colonymc.colonymoderationsystem.bungee.twofa.FreezeSession;
 import net.colonymc.colonymoderationsystem.bungee.twofa.LinkedPlayer;

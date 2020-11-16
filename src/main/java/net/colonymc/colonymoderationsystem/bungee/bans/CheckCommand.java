@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.colonymc.colonymoderationsystem.Messages;
 import net.md_5.bungee.api.ChatColor;

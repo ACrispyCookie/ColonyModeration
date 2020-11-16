@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.md_5.bungee.api.ChatColor;

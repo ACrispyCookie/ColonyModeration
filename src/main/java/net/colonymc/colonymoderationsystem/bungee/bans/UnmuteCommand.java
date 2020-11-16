@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.Messages;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.md_5.bungee.api.ChatColor;

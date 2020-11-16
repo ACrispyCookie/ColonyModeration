@@ -2,7 +2,7 @@ package net.colonymc.colonymoderationsystem.bungee.feedback;
 
 import java.util.HashMap;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.SpigotConnector;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 

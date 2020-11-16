@@ -3,7 +3,7 @@ package net.colonymc.colonymoderationsystem.bungee.staffmanager;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;

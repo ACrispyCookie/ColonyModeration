@@ -8,7 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import com.google.gson.JsonPrimitive;
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.bans.MassPunishment;
 import net.colonymc.colonymoderationsystem.bungee.bans.Punishment;
 import net.colonymc.colonymoderationsystem.bungee.bans.PunishmentType;

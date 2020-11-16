@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonyapi.Time;
 import net.colonymc.colonymoderationsystem.bungee.Main;
 import net.colonymc.colonymoderationsystem.bungee.reports.Report;
@@ -117,12 +117,12 @@ public class JoinListener implements Listener {
 			try {
 				if(pInfo.next()) {
 					MainDatabase.sendStatement("UPDATE PlayerInfo SET ip='" + c.getAddress().getHostString() + "',lastJoinTime=" + System.currentTimeMillis() + ",name='" + c.getName() 
-					+ "',skin='" + getSkin(c.getUniqueId().toString()) + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
+					+ "',skin='" + getSafeSkin(c.getUniqueId().toString()) + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
 				}
 				else {
 					MainDatabase.sendStatement("INSERT INTO PlayerInfo (name, uuid, ip, timesBanned, timesMuted, firstJoinTime, lastJoinTime, skin) VALUES "
 							+ "('" + c.getName() + "', '" + c.getUniqueId().toString() + "', '" + c.getAddress().getHostString() + "', 0, 0, " 
-							+ System.currentTimeMillis() + ", " + System.currentTimeMillis() + ", '" + getSkin(c.getUniqueId().toString()) + "');");
+							+ System.currentTimeMillis() + ", " + System.currentTimeMillis() + ", '" + getSafeSkin(c.getUniqueId().toString()) + "');");
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -143,32 +143,26 @@ public class JoinListener implements Listener {
 
 	private void checkIfBanned(LoginEvent e) {
 		PendingConnection c = e.getConnection();
-		ResultSet banned = MainDatabase.getResultSet("SELECT * FROM ActiveBans WHERE uuid='" + c.getUniqueId().toString() + "';");
-		try {
-			if(Ban.getByUuid(c.getUniqueId().toString()) != null) {
-				Ban ban = Ban.getByUuid(c.getUniqueId().toString());
-				e.setCancelReason(createReasonComponent(ban.getStaff(), ban.getBannedUntil() - System.currentTimeMillis(), ban.getReason(), ban.getId()));
-				e.setCancelled(true);
-				banned.next();
-				String bannedName = MainDatabase.getName(banned.getString("uuid"));
-				String bannedIp = banned.getString("bannedIp");
-				if(!bannedName.equals(c.getName())) {
-					ban.name = c.getName();
-					MainDatabase.sendStatement("UPDATE PlayerInfo SET name='" + c.getName() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
-				}
-				if(!bannedIp.equals(c.getAddress().getHostString())) {
-					ban.bannedIp = c.getAddress().getHostString();
-					MainDatabase.sendStatement("UPDATE ActiveBans SET bannedIp='" + c.getAddress().getHostString() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
-					MainDatabase.sendStatement("UPDATE PlayerInfo SET ip='" + c.getAddress().getHostString() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
-				}
+		if(Ban.getByUuid(c.getUniqueId().toString()) != null) {
+			Ban ban = Ban.getByUuid(c.getUniqueId().toString());
+			e.setCancelReason(createReasonComponent(ban.getStaff(), ban.getBannedUntil() - System.currentTimeMillis(), ban.getReason(), ban.getId()));
+			e.setCancelled(true);
+			String bannedName = ban.getPlayerName();
+			String bannedIp = ban.getBannedIp();
+			if(!bannedName.equals(c.getName())) {
+				ban.name = c.getName();
+				MainDatabase.sendStatement("UPDATE PlayerInfo SET name='" + c.getName() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
 			}
-			else if(Ban.getByIp(c.getAddress().getHostString()) != null) {
-				Ban ban = Ban.getByIp(c.getAddress().getHostString());
-				e.setCancelReason(createBanEvasionComponent(ban.getPlayerName(), ban.getReason(), ban.getStaff(), ban.getBannedUntil() - System.currentTimeMillis()));
-				e.setCancelled(true);
+			if(!bannedIp.equals(c.getAddress().getHostString())) {
+				ban.bannedIp = c.getAddress().getHostString();
+				MainDatabase.sendStatement("UPDATE ActiveBans SET bannedIp='" + c.getAddress().getHostString() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
+				MainDatabase.sendStatement("UPDATE PlayerInfo SET ip='" + c.getAddress().getHostString() + "' WHERE uuid='" + c.getUniqueId().toString() + "';");
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		}
+		else if(Ban.getByIp(c.getAddress().getHostString()) != null) {
+			Ban ban = Ban.getByIp(c.getAddress().getHostString());
+			e.setCancelReason(createBanEvasionComponent(ban.getPlayerName(), ban.getReason(), ban.getStaff(), ban.getBannedUntil() - System.currentTimeMillis()));
+			e.setCancelled(true);
 		}
 	}
 	
@@ -228,15 +222,15 @@ public class JoinListener implements Listener {
 					+ "\n§fLogin from your other\n§faccount in order to get your §dBan ID\n\n§fYou can write a ban appeal by opening a ticket here:\n§dhttps://www.colonymc.net/appeal";
 		return new TextComponent(finalText).toPlainText();
 	}
-	
-	private String getSkin(String uuid) {
-		return getHeadValue(uuid.replaceAll("-", ""));
+
+	private String getSafeSkin(String uuid) {
+		return getSkin(uuid.replaceAll("-", ""));
 	}
 	
-	private  String getHeadValue(String uid){
+	private  String getSkin(String uid){
 	    try {
 	        Gson g = new Gson();
-	        String signature = getURLContent("https://sessionserver.mojang.com/session/minecraft/profile/" + uid);
+	        String signature = getURLContent("https://sessionserver.mojang.com/session/minecraft/profile/" + uid );
 	        JsonObject obj = g.fromJson(signature, JsonObject.class);
 			return obj.getAsJsonArray("properties").get(0).getAsJsonObject().get("value").getAsString();
 	    } catch (Exception ignored){ }

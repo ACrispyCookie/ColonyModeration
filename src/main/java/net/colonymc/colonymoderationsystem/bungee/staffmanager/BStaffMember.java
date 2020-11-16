@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import net.colonymc.colonyapi.MainDatabase;
+import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.staffmanager.BStaffMemberComparator;
 import net.colonymc.colonymoderationsystem.spigot.staffmanager.utils.DPunishment;
 import net.colonymc.colonymoderationsystem.spigot.staffmanager.utils.Feedback;
