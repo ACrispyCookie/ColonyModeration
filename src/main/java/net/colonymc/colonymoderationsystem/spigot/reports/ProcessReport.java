@@ -19,8 +19,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
-import net.colonymc.colonyspigotapi.itemstacks.SkullItemBuilder;
+import net.colonymc.colonyspigotapi.api.itemstack.ItemStackBuilder;
+import net.colonymc.colonyspigotapi.api.itemstack.SkullItemBuilder;
 import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.BungeecordConnector;
 import net.colonymc.colonymoderationsystem.spigot.Main;

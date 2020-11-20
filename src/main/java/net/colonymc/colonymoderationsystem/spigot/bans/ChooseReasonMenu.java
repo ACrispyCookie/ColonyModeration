@@ -19,7 +19,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
+import net.colonymc.colonyspigotapi.api.itemstack.ItemStackBuilder;
 import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.bungee.bans.PunishmentType;
 import net.colonymc.colonymoderationsystem.spigot.BungeecordConnector;

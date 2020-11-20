@@ -4,9 +4,9 @@ import java.util.HashMap;
 
 import org.bukkit.entity.Player;
 
-import net.colonymc.colonyspigotapi.book.survey.Survey;
-import net.colonymc.colonyspigotapi.book.survey.SurveyBookBuilder;
-import net.colonymc.colonyspigotapi.book.survey.SurveyLineBuilder;
+import net.colonymc.colonyspigotapi.api.survey.Survey;
+import net.colonymc.colonyspigotapi.api.survey.SurveyBookBuilder;
+import net.colonymc.colonyspigotapi.api.survey.SurveyLineBuilder;
 import net.colonymc.colonymoderationsystem.spigot.BungeecordConnector;
 
 public class BFeedback {

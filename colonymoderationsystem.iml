@@ -23,6 +23,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: io.netty:netty-common:4.0.33.Final" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:guava:18.0" level="project" />
     <orderEntry type="module" module-name="colonyspigotapi" scope="PROVIDED" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: net.colonymc:colonybasicutils:1.0-SNAPSHOT" level="project" />
     <orderEntry type="module" module-name="colonyapi" scope="PROVIDED" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.zaxxer:HikariCP:3.4.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.slf4j:slf4j-simple:1.6.4" level="project" />

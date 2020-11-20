@@ -14,7 +14,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
+import net.colonymc.colonyspigotapi.api.itemstack.ItemStackBuilder;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.Rank;
 import net.colonymc.colonymoderationsystem.bungee.staffmanager.StaffAction;

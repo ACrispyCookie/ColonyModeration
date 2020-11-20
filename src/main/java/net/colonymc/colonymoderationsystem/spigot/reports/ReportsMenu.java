@@ -19,9 +19,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.colonymc.colonyspigotapi.itemstacks.InventoryUtils;
-import net.colonymc.colonyspigotapi.itemstacks.ItemStackBuilder;
-import net.colonymc.colonyspigotapi.itemstacks.SkullItemBuilder;
+import net.colonymc.colonyspigotapi.api.inventory.InventoryUtils;
+import net.colonymc.colonyspigotapi.api.itemstack.ItemStackBuilder;
+import net.colonymc.colonyspigotapi.api.itemstack.SkullItemBuilder;
 import net.colonymc.colonymoderationsystem.spigot.Main;
 
 public class ReportsMenu implements Listener, InventoryHolder {
