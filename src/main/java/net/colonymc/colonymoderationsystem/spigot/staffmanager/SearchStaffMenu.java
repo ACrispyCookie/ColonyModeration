@@ -37,14 +37,12 @@ public class SearchStaffMenu implements Listener, InventoryHolder {
 	
 	public SearchStaffMenu(Player p, String query) {
 		this.p = p;
-		BStaffMember.loadStaff();
 		for(BStaffMember m : BStaffMember.getAllStaff()) {
 			if(MainDatabase.getName(m.getUuid()).toLowerCase().contains(query.toLowerCase())) {
 				found.add(m);
 			}
 		}
 		this.inv = Bukkit.createInventory(this, 54, "Staff found: " + found.size());
-		BStaffMember.loadStaff();
 		fillInventory();
 	}
 	

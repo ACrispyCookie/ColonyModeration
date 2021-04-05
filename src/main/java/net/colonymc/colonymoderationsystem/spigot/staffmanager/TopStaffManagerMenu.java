@@ -45,7 +45,6 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, p.hasPermission("colonymc.staffmanager") ? 54 : 36, "Best" + (p.hasPermission("colonymc.staffmanager") ? "/Worst" : "") + " staff members");
 		setup();
-		BStaffMember.loadStaff();
 		update = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -61,7 +60,6 @@ public class TopStaffManagerMenu implements Listener, InventoryHolder {
 	private void fillInventory() {
 		if(System.currentTimeMillis() >= nextD || System.currentTimeMillis() >= nextW || System.currentTimeMillis() >= nextM) {
 			setup();
-			BStaffMember.loadStaff();
 		}
 		if(p.hasPermission("colonymc.staffmanager")) {
 			inv.setItem(49, new ItemStackBuilder(Material.ARROW).name("&dGo back").build());

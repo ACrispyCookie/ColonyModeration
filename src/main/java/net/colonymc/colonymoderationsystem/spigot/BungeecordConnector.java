@@ -106,7 +106,6 @@ public class BungeecordConnector implements PluginMessageListener {
 					case "ManagerMenuPlayer": {
 						String playerName = in.readUTF();
 						String target = in.readUTF();
-						BStaffMember.loadStaff();
 						new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), new AllStaffManagerMenu(p)).openInventory();
 						break;
 					}
@@ -114,7 +113,6 @@ public class BungeecordConnector implements PluginMessageListener {
 						String playerName = in.readUTF();
 						String target = in.readUTF();
 						String action = in.readUTF();
-						BStaffMember.loadStaff();
 						if (BStaffMember.getByUuid(target) != null) {
 							new SelectRankMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), StaffAction.valueOf(action),
 									new StaffManagerPlayerMenu(Bukkit.getPlayerExact(playerName), BStaffMember.getByUuid(target), new StaffManagerMenu(Bukkit.getPlayerExact(playerName)))).openInventory();

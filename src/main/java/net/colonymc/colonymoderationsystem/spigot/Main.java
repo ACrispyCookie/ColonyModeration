@@ -1,5 +1,6 @@
 package net.colonymc.colonymoderationsystem.spigot;
 
+import net.colonymc.colonymoderationsystem.bungee.staffmanager.BStaffMember;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -66,6 +67,7 @@ public class Main extends JavaPlugin {
 			signGui = new SignGUI(this);
 			luckPerms = Bukkit.getServicesManager().getRegistration(LuckPerms.class).getProvider();
 			setupOtherClasses();
+			BStaffMember.startLoadingStaff();
 			started = true;
 			System.out.println("[ColonyModerationSystem] » has been enabled successfully!");
 		}

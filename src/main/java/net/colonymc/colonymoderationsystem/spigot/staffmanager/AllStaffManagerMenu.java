@@ -36,7 +36,6 @@ public class AllStaffManagerMenu implements Listener, InventoryHolder {
 	public AllStaffManagerMenu(Player p) {
 		this.p = p;
 		this.inv = Bukkit.createInventory(this, 54, "Staff members");
-		BStaffMember.loadStaff();
 		fillInventory();
 	}
 	

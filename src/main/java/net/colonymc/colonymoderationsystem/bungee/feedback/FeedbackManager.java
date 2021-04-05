@@ -118,7 +118,6 @@ public class FeedbackManager {
 					topSurveyedStaff.add(rs.getString("uuid"));
 				}
 			}
-			BStaffMember.loadStaff();
 			ArrayList<BStaffMember> staff = BStaffMember.getStaff();
 			staff.sort(new BStaffMemberComparator(cal.getTimeInMillis() - 21600000, cal.getTimeInMillis()));
 			for(int i = 0; i < BStaffMember.getStaff().size(); i++) {

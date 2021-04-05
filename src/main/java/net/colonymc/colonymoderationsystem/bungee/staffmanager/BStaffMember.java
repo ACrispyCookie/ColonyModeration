@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import net.colonymc.colonyapi.database.MainDatabase;
 import net.colonymc.colonymoderationsystem.spigot.staffmanager.BStaffMemberComparator;
@@ -538,12 +541,6 @@ public class BStaffMember {
 				return m;
 			}
 		}
-		loadStaff();
-		for(BStaffMember m : staff) {
-			if(m.getUuid().equals(uuid)) {
-				return m;
-			}
-		}
 		return null;
 	}
 	
@@ -578,7 +575,12 @@ public class BStaffMember {
 	public static BStaffMember getWSMOfMonth() {
 		return wsmom;
 	}
-	
+
+	public static void startLoadingStaff(){
+		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+		scheduler.scheduleAtFixedRate(BStaffMember::loadStaff, 0, 3, TimeUnit.MINUTES);
+	}
+
 	public static void loadStaff() {
 		try {
 			allStaff.clear();

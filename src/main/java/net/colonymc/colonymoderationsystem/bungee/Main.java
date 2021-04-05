@@ -40,11 +40,7 @@ import net.colonymc.colonymoderationsystem.bungee.reports.ArchivedReportsCommand
 import net.colonymc.colonymoderationsystem.bungee.reports.Report;
 import net.colonymc.colonymoderationsystem.bungee.reports.ReportCommand;
 import net.colonymc.colonymoderationsystem.bungee.reports.ReportsCommand;
-import net.colonymc.colonymoderationsystem.bungee.staffmanager.DemoteCommand;
-import net.colonymc.colonymoderationsystem.bungee.staffmanager.PromoteCommand;
-import net.colonymc.colonymoderationsystem.bungee.staffmanager.StaffJoinListener;
-import net.colonymc.colonymoderationsystem.bungee.staffmanager.StaffManagerCommand;
-import net.colonymc.colonymoderationsystem.bungee.staffmanager.TopStaffAnnouncer;
+import net.colonymc.colonymoderationsystem.bungee.staffmanager.*;
 import net.colonymc.colonymoderationsystem.bungee.twofa.FreezeSession;
 import net.colonymc.colonymoderationsystem.bungee.twofa.LinkCommand;
 import net.colonymc.colonymoderationsystem.bungee.twofa.LinkedPlayer;
@@ -95,6 +91,7 @@ public class Main extends Plugin {
 				createNewLogFile();
 			}
 			loadQueues();
+			BStaffMember.startLoadingStaff();
 			started = true;
 			System.out.println("[ColonyModerationSystem] has been enabled successfully!");
 		}
