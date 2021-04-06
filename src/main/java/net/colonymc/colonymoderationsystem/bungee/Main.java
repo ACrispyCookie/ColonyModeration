@@ -166,7 +166,7 @@ public class Main extends Plugin {
 	
 	private void setupDiscordBot() {
 		try {
-			jda = JDABuilder.createDefault("NjQ0NjU1MTIzNTYxMTg1MzQ5.Xo4RLg.nSRlrG0N-tRKZXL0wTQ6kvUkioY").build();
+			jda = JDABuilder.createDefault("bot-token").build();
 			jda.awaitReady();
 			Main.getGuild().getVoiceChannelById(705743260953477188L).getManager().setName("✅ Total Users: " + Main.getGuild().getMemberCount()).queue();
 			ProxyServer.getInstance().getScheduler().schedule(Main.getInstance(), new Runnable() {
