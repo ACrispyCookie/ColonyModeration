@@ -1,10 +1,10 @@
-# ColonyModeration
-A (bad) attempt to create a moderation plugin with many good and very unique features. Also, it controls a discord bot using JDA.
+# ColonyModerationSystem
+A (bad) attempt to create a Minecraft moderation plugin with many good and very unique features. Also, it controls a discord bot using JDA.
 
 Features (In-game):
   - One-click punishments (Automatic type and duration calculation)
   - Custom punishments (Duration, type and reason)
-  - Mass punishments (Punish mulitple players in a few minutes)
+  - Mass punishments (Punish multiple players in a few minutes)
   - Rollback punishments
   - Automatic ban evading kicks
   - Report system hooked into the punishment system
