@@ -1,20 +1,18 @@
 # ColonyModeration
-A (bad) attempt to create a Minecraft moderation plugin with many good and very unique features. Also, it controls a discord bot using JDA.
+### NOTE: This plugin is being recoded!
 
-Features (In-game):
-  - One-click punishments (Automatic type and duration calculation)
-  - Custom punishments (Duration, type and reason)
-  - Mass punishments (Punish multiple players in a few minutes)
+ColonyModeration was my first project and although it has some pretty unique features it is the least optimised plugin I've coded. The most remarkable features are:
+
+  - One-click bans/mutes (Automatic duration calculation)
+  - Fully custom punishments
+  - Staff rating system based their performance
+  - Punish multiple players at once
   - Rollback punishments
-  - Automatic ban evading kicks
-  - Report system hooked into the punishment system
-  - "/chat" command to easily control the chat
-  - 2FA authentication for staff members through the discord bot
-  - Feedback system using book GUIs
-  - Staff manager system which calculates a rating for every staff member based on their performance
-
-Features (Discord bot):
-  - Basic informative commands
+  - Automatic kick on ban evading accounts
+  - Report system
+  - Chat managing system
+  - User feedback for staff members using Book GUI
+  - Two factor authentication for staff on discord
+  - Simpler ban/mute system for the discord server
   - Minecraft & Discord user link
-  - Auto-role for promoted/demoted staff
-  - Similar one-click punishment system to the in-game
+  - Automatic role assignment on discord based on in-game rank
