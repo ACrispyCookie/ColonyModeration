@@ -1,7 +1,7 @@
-name: ColonyModerationSystem
+name: ColonyModeration
 version: 2.0
 author: ACrispyCookie
-main: net.colonymc.colonymoderationsystem.spigot.Main
+main: net.colonymc.colonymoderation.spigot.Main
 depend: [ColonyAPI, ColonySpigotAPI, LuckPerms, ProtocolLib]
 commands: 
   queue:

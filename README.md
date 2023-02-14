@@ -1,4 +1,4 @@
-# ColonyModerationSystem
+# ColonyModeration
 A (bad) attempt to create a moderation plugin with many good and very unique features. Also, it controls a discord bot using JDA.
 
 Features (In-game):
