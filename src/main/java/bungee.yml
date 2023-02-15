@@ -2,4 +2,4 @@ name: ColonyModeration
 version: 2.0
 author: ACrispyCookie
 main: net.colonymc.colonymoderation.bungee.Main
-depends: [ColonyAPI]
+depends: [ColonyAPI, LuckPerms]

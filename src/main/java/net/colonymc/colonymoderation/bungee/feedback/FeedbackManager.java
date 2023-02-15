@@ -114,9 +114,7 @@ public class FeedbackManager {
 		ResultSet rs = MainDatabase.getResultSet("SELECT uuid, COUNT(*) FROM StaffFeedback GROUP BY uuid ORDER BY COUNT(*) DESC");
 		try {
 			while(rs.next()) {
-				if(!rs.getString("uuid").equals("37c3bfb6-6fa9-4602-a9bd-a1e95baea85f")) {
-					topSurveyedStaff.add(rs.getString("uuid"));
-				}
+				topSurveyedStaff.add(rs.getString("uuid"));
 			}
 			ArrayList<BStaffMember> staff = BStaffMember.getStaff();
 			staff.sort(new BStaffMemberComparator(cal.getTimeInMillis() - 21600000, cal.getTimeInMillis()));
